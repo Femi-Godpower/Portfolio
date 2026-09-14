@@ -8,7 +8,7 @@ import {
   buildProductMetadata,
   generateProductStaticParamsForVariant,
   resolveProductPageData,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 
 interface ProductPageProps {
   params: Promise<{

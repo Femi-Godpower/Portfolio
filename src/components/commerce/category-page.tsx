@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMoney, resolveCurrency, resolveUnitPrice } from "@/lib/ominity/commerce";
+import { formatCatalogPrice } from "@/lib/ominity/commerce";
 import type {
   StarterResolvedCommerceCategory,
   StarterResolvedCommerceProduct,
@@ -19,16 +19,16 @@ export function CommerceCategoryPage(props: CommerceCategoryPageProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl">{props.category.record.name}</CardTitle>
-          {props.category.record.description && (
-            <CardDescription>{props.category.record.description}</CardDescription>
+          <CardTitle className="text-3xl">{props.category.category.name}</CardTitle>
+          {props.category.category.description && (
+            <CardDescription>{props.category.category.description}</CardDescription>
           )}
         </CardHeader>
-        {props.category.record.coverImage && (
+        {props.category.category.coverImage && (
           <CardContent>
             <Image
-              src={props.category.record.coverImage}
-              alt={props.category.record.name}
+              src={props.category.category.coverImage}
+              alt={props.category.category.name}
               width={1280}
               height={720}
               unoptimized
@@ -49,22 +49,19 @@ export function CommerceCategoryPage(props: CommerceCategoryPageProps) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {props.products.map((product) => (
-              <Card key={product.record.id}>
+              <Card key={product.product.id}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{product.record.title}</CardTitle>
-                  <CardDescription>SKU {product.record.sku}</CardDescription>
+                  <CardTitle className="text-lg">{product.product.title}</CardTitle>
+                  <CardDescription>SKU {product.product.sku}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {product.record.shortDescription && (
+                  {product.product.shortDescription && (
                     <p className="text-sm text-muted-foreground">
-                      {product.record.shortDescription}
+                      {product.product.shortDescription}
                     </p>
                   )}
                   <p className="text-sm font-medium">
-                    {formatMoney(
-                      resolveUnitPrice(product.record.price),
-                      resolveCurrency(product.record.currency),
-                    )}
+                    {formatCatalogPrice(product.offers)}
                   </p>
                   <Link
                     className="text-sm font-medium text-primary hover:underline"

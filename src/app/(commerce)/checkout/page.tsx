@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CommerceCheckoutPage } from "@/components/commerce/checkout-page";
 import { buildAuthUtilityPaths } from "@/lib/ominity/auth";
-import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce";
+import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce/server";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,6 +40,8 @@ export default async function CheckoutPageRoute() {
 
   return (
     <CommerceCheckoutPage
+      countries={resolved.countries}
+      {...(resolved.defaultCountry ? { defaultCountry: resolved.defaultCountry } : {})}
       paths={{
         checkout: resolved.paths.checkout,
         cart: resolved.paths.cart,

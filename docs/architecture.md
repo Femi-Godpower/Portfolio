@@ -14,7 +14,7 @@
   - catch-all CMS page entry (`(pages)/[...segment]`)
   - modular commerce routes (localized templates from `src/locales/routes/commerce/*.json` for product/category and utility pages)
   - separate auth routes (`/auth/*`, `/account`)
-  - auth + commerce API bridge routes (`/api/auth/*`, `/api/commerce/*`)
+  - thin auth, customer-account, and commerce route factories (`/api/auth/*`, `/api/customer-accounts/*`, `/api/commerce/*`)
   - metadata/sitemap/draft endpoints
 
 - `src/lib/ominity`
@@ -35,15 +35,16 @@
   - wishlist kept local until wishlist API support is available
 
 - `src/components/auth`
-  - auth session provider and hook
-  - login/register/account/MFA client pages
+  - branded login/register/password/account/MFA pages consuming package state
   - password input + strength + MFA code UI primitives
 
+- `src/components/account`
+  - branded customer switcher, profile, addresses, team, invitation, commerce-resource, and login-activity examples
+  - permission-aware rendering over `@ominity/next/customer-accounts/react`
+
 - `src/lib/ominity/server`
-  - Ominity SDK server helpers
-  - signed auth session cookie handling
-  - normalized API response mappers
-  - mock commerce/auth server behavior for local mode
+  - environment-to-package route configuration only
+  - localized invitation acceptance URL configuration
 
 - `src/components/ui`
   - shadcn-style primitives for design consistency
@@ -65,4 +66,4 @@
 
 This keeps route and rendering code unchanged across environments.
 
-For commerce/auth, mock mode routes still work through the same `/api/*` contract so client components do not branch by environment.
+For commerce/auth, mock mode routes still use the same `/api/*` contract so client components do not branch by environment. Customer team and account-resource examples require a live Ominity user/customer relationship.

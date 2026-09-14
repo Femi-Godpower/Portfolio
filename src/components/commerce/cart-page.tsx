@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import {
-  commerceCartItemCurrency,
   commerceCartItemId,
   commerceCartItemProductId,
   commerceCartItemQuantity,
@@ -49,10 +48,17 @@ export function CommerceCartPage(props: CommerceCartPageProps) {
     emitCommerceEvent("cart_viewed", {
       cartCount: commerce.cartCount,
       cartSubtotal: commerce.cartSubtotal,
-      ...(commerce.cart[0] ? { currency: commerceCartItemCurrency(commerce.cart[0]) } : {}),
+      ...(commerce.cartCurrency ? { currency: commerce.cartCurrency } : {}),
       ...(commerce.promotionCodes.length > 0 ? { promotionCodes: commerce.promotionCodes } : {}),
     });
-  }, [commerce.cart, commerce.cartCount, commerce.cartSubtotal, commerce.promotionCodes, commerce.ready]);
+  }, [
+    commerce.cart,
+    commerce.cartCount,
+    commerce.cartCurrency,
+    commerce.cartSubtotal,
+    commerce.promotionCodes,
+    commerce.ready,
+  ]);
 
   if (!commerce.ready) {
     return (
@@ -112,7 +118,7 @@ export function CommerceCartPage(props: CommerceCartPageProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    {formatMoney(commerceCartItemUnitPrice(item), commerceCartItemCurrency(item))} each
+                    {formatMoney(commerceCartItemUnitPrice(item), commerce.cartCurrency)} each
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -196,7 +202,29 @@ export function CommerceCartPage(props: CommerceCartPageProps) {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>Subtotal</span>
-                <span>{formatMoney(commerce.cartSubtotal, commerce.cartCurrency ?? "EUR")}</span>
+                <span>{formatMoney(commerce.cartSubtotal, commerce.cartCurrency)}</span>
+              </div>
+              {commerce.cartDiscount !== 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span>Discount</span>
+                  <span>{formatMoney(commerce.cartDiscount, commerce.cartCurrency)}</span>
+                </div>
+              )}
+              {commerce.cartShipping !== 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span>Shipping</span>
+                  <span>{formatMoney(commerce.cartShipping, commerce.cartCurrency)}</span>
+                </div>
+              )}
+              {commerce.cartTax !== 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span>Tax</span>
+                  <span>{formatMoney(commerce.cartTax, commerce.cartCurrency)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
+                <span>Total</span>
+                <span>{formatMoney(commerce.cartTotal, commerce.cartCurrency)}</span>
               </div>
               {props.features.checkout ? (
                 <Link href={checkoutPath as Route} className="inline-block text-sm font-medium text-primary hover:underline">

@@ -11,14 +11,17 @@ import { Input } from "@/components/ui/input";
 
 import { useAuth } from "./auth-provider";
 import { InputPassword } from "./input-password";
+import { SocialLoginOptions } from "./social-login-options";
 
 export interface AuthLoginPageProps {
   readonly paths: {
     readonly register: string;
     readonly account: string;
     readonly mfa: string;
+    readonly forgotPassword: string;
   };
   readonly returnTo?: string;
+  readonly socialError?: string;
 }
 
 export function AuthLoginPage(props: AuthLoginPageProps) {
@@ -92,7 +95,16 @@ export function AuthLoginPage(props: AuthLoginPageProps) {
         <Button disabled={submitting} onClick={() => { void submit(); }}>
           {submitting ? "Signing in…" : "Login"}
         </Button>
+        {props.socialError && (
+          <p className="text-sm text-destructive">
+            Social sign-in could not be completed ({props.socialError.replaceAll("_", " ").toLowerCase()}).
+          </p>
+        )}
         {message && <p className="text-sm text-muted-foreground">{message}</p>}
+        <Link href={props.paths.forgotPassword as Route} className="text-sm font-medium text-primary hover:underline">
+          Forgot password?
+        </Link>
+        <SocialLoginOptions />
         <p className="text-sm text-muted-foreground">
           No account yet?{" "}
           <Link href={props.paths.register as Route} className="font-medium text-primary hover:underline">

@@ -8,7 +8,7 @@ import {
   buildCategoryMetadata,
   generateCategoryStaticParamsForVariant,
   resolveCategoryPageData,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 
 interface CategoryPageProps {
   params: Promise<{

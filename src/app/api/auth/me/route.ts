@@ -1,4 +1,4 @@
-import { createOminityAuthMeRouteHandler } from "@ominity/next/auth";
+import { createOminityAuthMeRouteHandler } from "@ominity/next/auth/server";
 
 import { getStarterAuthRouteConfig } from "@/lib/ominity/server/route-config";
 

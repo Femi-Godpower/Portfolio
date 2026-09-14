@@ -11,6 +11,7 @@ interface LoginPageProps {
   }>;
   searchParams: Promise<{
     returnTo?: string;
+    socialError?: string;
   }>;
 }
 
@@ -62,8 +63,10 @@ export default async function LoginPageRoute({ params, searchParams }: LoginPage
         register: resolved.paths.register,
         account: resolved.paths.account,
         mfa: resolved.paths.mfa,
+        forgotPassword: resolved.paths.forgotPassword,
       }}
       {...(typeof query.returnTo === "string" ? { returnTo: query.returnTo } : {})}
+      {...(typeof query.socialError === "string" ? { socialError: query.socialError } : {})}
     />
   );
 }

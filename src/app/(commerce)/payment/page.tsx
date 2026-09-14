@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CommercePaymentPage } from "@/components/commerce/payment-page";
 import { buildAuthUtilityPaths } from "@/lib/ominity/auth";
-import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce";
+import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce/server";
 
 interface PaymentPageProps {
   searchParams: Promise<{

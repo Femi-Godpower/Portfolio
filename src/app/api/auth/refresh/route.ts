@@ -1,4 +1,4 @@
-import { createOminityAuthRefreshRouteHandler } from "@ominity/next/auth";
+import { createOminityAuthRefreshRouteHandler } from "@ominity/next/auth/server";
 
 import { getStarterAuthRouteConfig } from "@/lib/ominity/server/route-config";
 

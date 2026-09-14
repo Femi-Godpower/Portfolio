@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
-import { buildCommerceUtilityPaths, formatMoney, resolveCurrency, resolveUnitPrice, type StarterResolvedCommerceProduct } from "@/lib/ominity/commerce";
+import { buildCommerceUtilityPaths, formatCatalogPrice, resolveCatalogPrice, type StarterResolvedCommerceProduct } from "@/lib/ominity/commerce";
 import { buildAuthUtilityPaths } from "@/lib/ominity/auth";
 
 import { CommerceProductActions } from "./product-actions";
@@ -16,16 +16,12 @@ export function CommerceProductPage(props: CommerceProductPageProps) {
   const config = getStarterOminityConfig();
   const paths = buildCommerceUtilityPaths(props.locale);
   const authPaths = buildAuthUtilityPaths(props.locale);
-  const unitPrice = resolveUnitPrice(props.product.record.price);
-  const currency = resolveCurrency(props.product.record.currency);
+  const price = resolveCatalogPrice(props.product.offers);
   const productForActions = {
-    id: props.product.record.id,
-    sku: props.product.record.sku,
-    title: props.product.record.title,
+    product: props.product.product,
+    offers: props.product.offers,
     canonicalPath: props.product.canonicalPath,
-    unitPrice,
-    currency,
-    ...(typeof props.product.record.coverImage === "string" ? { coverImage: props.product.record.coverImage } : {}),
+    ...(price ? { preferredCurrency: price.currency } : {}),
   };
 
   return (
@@ -33,18 +29,18 @@ export function CommerceProductPage(props: CommerceProductPageProps) {
       <Card>
         <CardHeader>
           <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            SKU {props.product.record.sku}
+            SKU {props.product.product.sku}
           </div>
-          <CardTitle className="text-3xl">{props.product.record.title}</CardTitle>
-          {props.product.record.shortDescription && (
-            <CardDescription>{props.product.record.shortDescription}</CardDescription>
+          <CardTitle className="text-3xl">{props.product.product.title}</CardTitle>
+          {props.product.product.shortDescription && (
+            <CardDescription>{props.product.product.shortDescription}</CardDescription>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {props.product.record.coverImage && (
+          {props.product.product.coverImage && (
             <Image
-              src={props.product.record.coverImage}
-              alt={props.product.record.title}
+              src={props.product.product.coverImage}
+              alt={props.product.product.title}
               width={1280}
               height={720}
               unoptimized
@@ -52,14 +48,14 @@ export function CommerceProductPage(props: CommerceProductPageProps) {
             />
           )}
 
-          {props.product.record.description && (
+          {props.product.product.description && (
             <p className="leading-relaxed text-muted-foreground">
-              {props.product.record.description}
+              {props.product.product.description}
             </p>
           )}
 
           <div className="text-sm font-medium text-muted-foreground">
-            Price: {formatMoney(unitPrice, currency)}
+            Price: {formatCatalogPrice(props.product.offers)}
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-import { createOminityAuthMfaSendRouteHandler } from "@ominity/next/auth";
+import { createOminityAuthMfaSendRouteHandler } from "@ominity/next/auth/server";
 
 import { getStarterAuthRouteConfig } from "@/lib/ominity/server/route-config";
 

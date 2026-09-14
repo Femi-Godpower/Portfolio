@@ -7,6 +7,7 @@ Production-ready Next.js App Router starter that integrates [`@ominity/next`](ht
 - SSG/ISR-ready catch-all routing
 - Tailwind CSS + shadcn-style UI foundation
 - optional Ominity forms module integration
+- full auth, customer-account, team, and commerce examples
 
 This starter is designed for long-term maintainability across multiple websites.
 
@@ -19,8 +20,9 @@ This starter is designed for long-term maintainability across multiple websites.
 - **Commerce route module** with localized route templates from locale dictionaries
 - **Separate route modules** for `cms`, `commerce`, and `auth`
 - **Commerce feature modules** for cart, wishlist, checkout, and payment
-- **Separate auth feature set** for login/register/account/MFA and session state
-- **Server API bridge** for cart/checkout/auth (`/api/commerce/*`, `/api/auth/*`)
+- **Complete auth example** for login, registration, reset, MFA, social providers, sessions, and login activity
+- **Customer account portal** for switching, members, invitations, roles, permissions, addresses, orders, invoices, payments, subscriptions, and mandates
+- **Thin package route adapters** for commerce, auth, and customer accounts
 - **Mock mode** for local development without API credentials
 
 ## Quick start
@@ -41,9 +43,10 @@ By default, `OMINITY_USE_MOCK_DATA=true`, so the app works out of the box.
 2. Configure:
    - `OMINITY_API_URL`
    - `OMINITY_API_KEY`
-   - `OMINITY_CHANNEL_ID` (optional, recommended for channel-aware localization)
    - `OMINITY_AUTH_CLIENT_ID`, `OMINITY_AUTH_CLIENT_SECRET`, `OMINITY_AUTH_SESSION_SECRET` (for auth flows)
 3. Restart the dev server.
+
+The API key identifies the current channel through `/channels/current`. Channel languages, countries, currencies, and defaults are used directly by routing and the Ominity Dev Tool.
 
 ## Scripts
 
@@ -77,6 +80,10 @@ See [`docs/component-registry.md`](docs/component-registry.md).
 
 See [`docs/auth.md`](docs/auth.md).
 
+## Customer accounts and teams
+
+See [`docs/customer-accounts.md`](docs/customer-accounts.md). The example account portal is deliberately comprehensive; each section under `src/components/account` can be removed independently when a project does not need it.
+
 ## Commerce routes
 
 The starter includes separate route modules:
@@ -98,8 +105,9 @@ Commerce module routes:
 
 Starter APIs:
 
-- `/api/auth/*` for login/register/session/refresh/MFA/password flows
-- `/api/commerce/*` for cart items, checkout, shipping/payment methods, orders
+- `/api/auth/*` for login/register/session/refresh/MFA/password/social-provider/login-activity flows
+- `/api/customer-accounts/*` for switching, teams, permissions, invitations, and active-customer resources
+- `/api/commerce/*` for cart items, checkout, shipping/payment methods, orders, and payments
 
 ### Local JSON translations
 
@@ -124,7 +132,7 @@ You have three clean options:
 
 1. **Config-only**: toggle `OMINITY_FEATURE_*` flags (fastest).
 2. **Delete route folders**: remove `src/app/(commerce)` or `src/app/(auth)` for hard exclusion.
-3. **Delete feature code**: remove `src/components/commerce` or `src/components/auth` after route removal.
+3. **Delete feature code**: remove `src/components/commerce`, `src/components/auth`, or individual `src/components/account` sections after route removal.
 
 Recommended production approach: keep feature folders and control rollout with flags first.
 By default, all commerce modules are enabled in `.env.example`.
@@ -149,6 +157,7 @@ The starter uses `@ominity/next/forms` for rendering/submission and
 - [ ] Set `OMINITY_USE_MOCK_DATA=false`
 - [ ] Configure API env vars and locale strategy
 - [ ] Configure `OMINITY_AUTH_CLIENT_ID`, `OMINITY_AUTH_CLIENT_SECRET`, `OMINITY_AUTH_SESSION_SECRET`
+- [ ] Decide whether `OMINITY_FEATURE_CUSTOMER_ACCOUNTS` and its invitation/team UI are needed
 - [ ] Decide `OMINITY_CHECKOUT_ALLOW_GUEST` policy
 - [ ] Configure `NEXT_PUBLIC_SITE_URL`
 - [ ] Configure `OMINITY_DRAFT_TOKEN`

@@ -7,13 +7,14 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  formatMoney,
-  resolveCurrency,
-  resolveUnitPrice,
+  commerceMoneyValue,
+} from "@ominity/next/commerce";
+import {
+  formatCatalogPrice,
+  resolveCatalogPrice,
   type StarterResolvedCommerceCategory,
   type StarterResolvedCommerceProduct,
 } from "@/lib/ominity/commerce";
-import { normalizeLocaleCode, parseLocaleCode } from "@ominity/next/cms";
 
 type QueryValue = string | readonly string[] | undefined;
 
@@ -131,10 +132,10 @@ function buildCategoryOptions(
 ): ReadonlyArray<CategoryOption> {
   return categories
     .map((category) => ({
-      id: category.record.id,
-      ...(typeof category.record.numericId === "number" ? { numericId: category.record.numericId } : {}),
+      id: String(category.category.id),
+      numericId: category.category.id,
       slug: category.slugSegments.join("/"),
-      name: category.record.name,
+      name: category.category.name,
       path: category.canonicalPath,
     }));
 }
@@ -184,8 +185,6 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
   const maxPrice = parsePositiveNumber(firstValue(props.searchParams.maxPrice));
   const requestedPage = parsePage(firstValue(props.searchParams.page));
 
-  const localeCode = normalizeLocaleCode(props.locale);
-  const localeLanguage = parseLocaleCode(localeCode).language;
   const categoryOptions = buildCategoryOptions(props.categories);
   const selectedCategory = categoryOptions.find((entry) => entry.id === categoryFilter) ?? null;
   const searchNeedle = query.toLowerCase();
@@ -193,10 +192,10 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
   const filteredProducts = props.products.filter((product) => {
     if (searchNeedle.length > 0) {
       const haystack = [
-        product.record.title,
-        product.record.sku,
-        product.record.shortDescription ?? "",
-        product.record.description ?? "",
+        product.product.title,
+        product.product.sku,
+        product.product.shortDescription ?? "",
+        product.product.description ?? "",
       ]
         .join(" ")
         .toLowerCase();
@@ -206,28 +205,20 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
       }
     }
 
-    const unitPrice = resolveUnitPrice(product.record.price);
-    if (typeof minPrice === "number" && unitPrice < minPrice) {
+    const unitPrice = commerceMoneyValue(resolveCatalogPrice(product.offers));
+    if (typeof unitPrice !== "number" && (typeof minPrice === "number" || typeof maxPrice === "number")) {
+      return false;
+    }
+    if (typeof minPrice === "number" && typeof unitPrice === "number" && unitPrice < minPrice) {
       return false;
     }
 
-    if (typeof maxPrice === "number" && unitPrice > maxPrice) {
+    if (typeof maxPrice === "number" && typeof unitPrice === "number" && unitPrice > maxPrice) {
       return false;
     }
 
     if (selectedCategory) {
-      const byId = typeof selectedCategory.numericId === "number"
-        && typeof product.record.categoryId === "number"
-        && selectedCategory.numericId === product.record.categoryId;
-      const bySlug = selectedCategory.slug.length > 0
-        && typeof product.record.categorySlugs === "object"
-        && product.record.categorySlugs !== null
-        && (
-          product.record.categorySlugs[localeCode] === selectedCategory.slug
-          || product.record.categorySlugs[localeLanguage] === selectedCategory.slug
-        );
-
-      if (!byId && !bySlug) {
+      if (selectedCategory.numericId !== product.product.categoryId) {
         return false;
       }
     }
@@ -236,10 +227,10 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const leftPrice = resolveUnitPrice(a.record.price);
-    const rightPrice = resolveUnitPrice(b.record.price);
-    const leftTitle = a.record.title;
-    const rightTitle = b.record.title;
+    const leftPrice = commerceMoneyValue(resolveCatalogPrice(a.offers));
+    const rightPrice = commerceMoneyValue(resolveCatalogPrice(b.offers));
+    const leftTitle = a.product.title;
+    const rightTitle = b.product.title;
 
     switch (sort) {
       case "name-asc":
@@ -247,9 +238,11 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
       case "name-desc":
         return rightTitle.localeCompare(leftTitle, undefined, { sensitivity: "base" });
       case "price-asc":
-        return leftPrice - rightPrice || leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" });
+        return (leftPrice ?? Number.POSITIVE_INFINITY) - (rightPrice ?? Number.POSITIVE_INFINITY)
+          || leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" });
       case "price-desc":
-        return rightPrice - leftPrice || leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" });
+        return (rightPrice ?? Number.NEGATIVE_INFINITY) - (leftPrice ?? Number.NEGATIVE_INFINITY)
+          || leftTitle.localeCompare(rightTitle, undefined, { sensitivity: "base" });
       default:
         return 0;
     }
@@ -459,19 +452,17 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
       ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {pagedProducts.map((product) => {
-            const unitPrice = resolveUnitPrice(product.record.price);
-            const currency = resolveCurrency(product.record.currency);
             return (
-              <Card key={product.record.id}>
+              <Card key={product.product.id}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{product.record.title}</CardTitle>
-                  <CardDescription>SKU {product.record.sku}</CardDescription>
+                  <CardTitle className="text-lg">{product.product.title}</CardTitle>
+                  <CardDescription>SKU {product.product.sku}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {product.record.shortDescription ? (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">{product.record.shortDescription}</p>
+                  {product.product.shortDescription ? (
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{product.product.shortDescription}</p>
                   ) : null}
-                  <p className="text-sm font-medium">{formatMoney(unitPrice, currency)}</p>
+                  <p className="text-sm font-medium">{formatCatalogPrice(product.offers)}</p>
                   <Link href={product.canonicalPath as Route} className="text-sm font-medium text-primary hover:underline">
                     View product
                   </Link>
@@ -483,20 +474,18 @@ export function CommerceProductsPage(props: CommerceProductsPageProps) {
       ) : (
         <div className="space-y-3">
           {pagedProducts.map((product) => {
-            const unitPrice = resolveUnitPrice(product.record.price);
-            const currency = resolveCurrency(product.record.currency);
             return (
-              <Card key={product.record.id}>
+              <Card key={product.product.id}>
                 <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
-                    <p className="text-base font-semibold">{product.record.title}</p>
-                    <p className="text-xs text-muted-foreground">SKU {product.record.sku}</p>
-                    {product.record.shortDescription ? (
-                      <p className="text-sm text-muted-foreground">{product.record.shortDescription}</p>
+                    <p className="text-base font-semibold">{product.product.title}</p>
+                    <p className="text-xs text-muted-foreground">SKU {product.product.sku}</p>
+                    {product.product.shortDescription ? (
+                      <p className="text-sm text-muted-foreground">{product.product.shortDescription}</p>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium">{formatMoney(unitPrice, currency)}</span>
+                    <span className="text-sm font-medium">{formatCatalogPrice(product.offers)}</span>
                     <Link
                       href={product.canonicalPath as Route}
                       className={buttonVariants({ variant: "outline", size: "sm" })}

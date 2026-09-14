@@ -8,3 +8,6 @@ export * from "./input-password";
 export * from "./password-strength-bar";
 export * from "./input-mfa-code";
 export * from "./input-recovery-code";
+export * from "./social-login-options";
+export * from "./forgot-password-page";
+export * from "./reset-password-page";
