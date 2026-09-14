@@ -15,8 +15,8 @@ importers:
         specifier: ^1.4.8
         version: 1.4.8
       '@ominity/next':
-        specifier: ^1.9.4
-        version: 1.9.4(@ominity/api-typescript@1.4.8)(@swc/helpers@0.5.23)(next@16.3.5(@babel/core@7.29.7)(@types/node@22.20.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react-hook-form@7.88.0(react@19.3.0))(react@19.3.0)
+        specifier: ^1.9.5
+        version: 1.9.5(@ominity/api-typescript@1.4.8)(@swc/helpers@0.5.23)(next@16.3.5(@babel/core@7.29.7)(@types/node@22.20.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react-hook-form@7.88.0(react@19.3.0))(react@19.3.0)
       '@radix-ui/react-dialog':
         specifier: ^1.1.23
         version: 1.1.23(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -525,8 +525,8 @@ packages:
   '@ominity/api-typescript@1.4.8':
     resolution: {integrity: sha512-vxWSj30aARaqT6LqJT9YZ/B8nI26Dp30npmtQCaJPcNrMF4QVHDm6Fu/aIrRO7r2jdemG2p0tkb4awE9Ffd5IA==}
 
-  '@ominity/next@1.9.4':
-    resolution: {integrity: sha512-90jWdrBqHU17tic75LSsnZ3PcAUeSpKlqPCnoygXdDygkiEbwfOkJmloR/c4TuVsarhZAXK+alA6aR9yRR04mQ==}
+  '@ominity/next@1.9.5':
+    resolution: {integrity: sha512-x21PuFfmwoWtZj85nNqWlrJ9/QRH40JmiE6WE3Q0MLDKkAwHPBGvJm/1y7YNQ2xbqkqozu+LI9z5pw456ZLiJA==}
     peerDependencies:
       '@ominity/api-typescript': ^1.4.8
       next: ^15.0.0 || ^16.0.0
@@ -1310,11 +1310,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  brace-expansion@1.1.18:
-    resolution: {integrity: sha512-Edep/X9fGqVNmzKBVsDYIOtD+z1tuezV70LBjdCst9Tqu76lsnvRiZ6oTic1n+/BIwX6QDGAO94PN4N2SADvtw==}
+  brace-expansion@1.1.21:
+    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
 
-  brace-expansion@5.0.9:
-    resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
+  brace-expansion@5.0.12:
+    resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
 
   braces@3.0.3:
@@ -3014,7 +3014,7 @@ snapshots:
     dependencies:
       zod: 4.6.5
 
-  '@ominity/next@1.9.4(@ominity/api-typescript@1.4.8)(@swc/helpers@0.5.23)(next@16.3.5(@babel/core@7.29.7)(@types/node@22.20.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react-hook-form@7.88.0(react@19.3.0))(react@19.3.0)':
+  '@ominity/next@1.9.5(@ominity/api-typescript@1.4.8)(@swc/helpers@0.5.23)(next@16.3.5(@babel/core@7.29.7)(@types/node@22.20.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react-hook-form@7.88.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@ominity/api-typescript': 1.4.8
       next: 16.3.5(@babel/core@7.29.7)(@types/node@22.20.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -3690,12 +3690,12 @@ snapshots:
 
   baseline-browser-mapping@2.11.23: {}
 
-  brace-expansion@1.1.18:
+  brace-expansion@1.1.21:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
 
-  brace-expansion@5.0.9:
+  brace-expansion@5.0.12:
     dependencies:
       balanced-match: 4.0.4
 
@@ -4583,11 +4583,11 @@ snapshots:
 
   minimatch@10.2.6:
     dependencies:
-      brace-expansion: 5.0.9
+      brace-expansion: 5.0.12
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 1.1.18
+      brace-expansion: 1.1.21
 
   minimist@1.2.8: {}
 
