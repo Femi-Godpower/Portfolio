@@ -5,13 +5,14 @@ import type { Route } from "next";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
-import { useCommerce, type CommerceCatalogProduct } from "@/components/commerce/commerce-provider";
-import { formatMoney } from "@/lib/ominity/commerce";
+import { useCommerce, type CommerceProductSelection } from "@/components/commerce/commerce-provider";
+import { formatCatalogPrice, resolveCatalogPrice } from "@/lib/ominity/commerce";
+import { commerceMoneyValue } from "@ominity/next/commerce";
 import { emitCommerceEvent } from "@/lib/ominity/commerce/events";
 import { useAuth } from "@/components/auth";
 
 export interface CommerceProductActionsProps {
-  readonly product: CommerceCatalogProduct;
+  readonly product: CommerceProductSelection;
   readonly paths: {
     readonly cart: string;
     readonly wishlist: string;
@@ -30,7 +31,10 @@ export interface CommerceProductActionsProps {
 export function CommerceProductActions(props: CommerceProductActionsProps) {
   const commerce = useCommerce();
   const auth = useAuth();
-  const wished = commerce.isWishlisted(props.product.id);
+  const productId = String(props.product.product.id);
+  const price = resolveCatalogPrice(props.product.offers);
+  const unitPrice = commerceMoneyValue(price);
+  const wished = commerce.isWishlisted(productId);
   const hasEmittedProductView = useRef(false);
 
   useEffect(() => {
@@ -40,14 +44,21 @@ export function CommerceProductActions(props: CommerceProductActionsProps) {
 
     hasEmittedProductView.current = true;
     emitCommerceEvent("product_viewed", {
-      productId: props.product.id,
-      ...(props.product.sku ? { sku: props.product.sku } : {}),
-      ...(props.product.title ? { title: props.product.title } : {}),
-      ...(typeof props.product.unitPrice === "number" ? { unitPrice: props.product.unitPrice } : {}),
-      ...(props.product.currency ? { currency: props.product.currency } : {}),
+      productId,
+      sku: props.product.product.sku,
+      title: props.product.product.title,
+      ...(typeof unitPrice === "number" ? { unitPrice } : {}),
+      ...(price ? { currency: price.currency } : {}),
       ...(props.product.canonicalPath ? { canonicalPath: props.product.canonicalPath } : {}),
     });
-  }, [props.product]);
+  }, [
+    price,
+    productId,
+    props.product.canonicalPath,
+    props.product.product.sku,
+    props.product.product.title,
+    unitPrice,
+  ]);
 
   const hasAuthSession = auth.session !== null;
   const requiresLoginForCheckout = props.features.auth && !props.features.guestCheckout && !hasAuthSession;
@@ -60,7 +71,7 @@ export function CommerceProductActions(props: CommerceProductActionsProps) {
       <div className="rounded-md border bg-muted/40 p-4">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Price</div>
         <div className="text-2xl font-semibold">
-          {formatMoney(props.product.unitPrice, props.product.currency)}
+          {formatCatalogPrice(props.product.offers)}
         </div>
       </div>
 

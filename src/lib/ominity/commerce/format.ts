@@ -1,28 +1,29 @@
-const DEFAULT_CURRENCY = "EUR";
+import type { ProductOffer } from "@ominity/api-typescript/models/commerce/product-offer";
+import { resolveCommerceProductPrice } from "@ominity/next/commerce";
 
-export function resolveCurrency(currency: string | undefined): string {
-  if (typeof currency === "string" && currency.length > 0) {
-    return currency.toUpperCase();
-  }
-
-  return DEFAULT_CURRENCY;
+export function resolveCatalogPrice(offers: ReadonlyArray<ProductOffer>) {
+  return resolveCommerceProductPrice({ offers });
 }
 
-export function resolveUnitPrice(value: number | undefined): number {
-  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
-    return value;
-  }
-
-  return 0;
+export function formatCatalogPrice(offers: ReadonlyArray<ProductOffer>): string {
+  const price = resolveCatalogPrice(offers);
+  return price ? formatMoney(price.value, price.currency) : "—";
 }
 
-export function formatMoney(value: number, currency: string | undefined): string {
-  const normalizedCurrency = resolveCurrency(currency);
+export function formatMoney(value: string | number | undefined, currency: string | undefined): string {
+  if (!currency) {
+    return "—";
+  }
+
+  const numericValue = typeof value === "number" ? value : Number.parseFloat(value ?? "");
+  if (!Number.isFinite(numericValue)) {
+    return "—";
+  }
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: normalizedCurrency,
+    currency: currency.toUpperCase(),
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(numericValue);
 }

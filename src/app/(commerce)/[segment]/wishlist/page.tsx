@@ -6,7 +6,7 @@ import {
   buildCommerceFeatureMetadata,
   generateFixedCommerceStaticParamsForVariant,
   resolveCommerceFeaturePage,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 
 interface WishlistPageProps {

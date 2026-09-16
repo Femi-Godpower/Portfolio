@@ -7,7 +7,7 @@ import {
   listResolvedCommerceCategories,
   listResolvedCommerceProducts,
   resolveCommerceFeaturePage,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 
 interface ProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

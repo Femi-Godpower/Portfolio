@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { matchLocaleFromSegments, normalizeLocaleCode, type CmsRoutingConfig } from "@ominity/next/cms";
+import { matchLocaleFromSegments, normalizeLocaleCode, parseLocaleCode, type CmsRoutingConfig } from "@ominity/next/cms";
 import { buildLocalizedSlugAlternates } from "@ominity/next/next";
 
 import { getStarterOminityConfig } from "@/lib/ominity/env";
@@ -35,6 +35,8 @@ export interface ResolveCommerceFeaturePageInput {
 export interface ResolvedCommerceFeaturePage {
   readonly locale: string;
   readonly paths: CommerceUtilityPaths;
+  readonly countries: ReadonlyArray<string>;
+  readonly defaultCountry?: string;
 }
 
 function normalizePath(path: string): string {
@@ -136,9 +138,17 @@ export async function resolveCommerceFeaturePage(
     return null;
   }
 
+  const channelContext = await getStarterChannelContext();
+  const localeCountry = parseLocaleCode(locale).country?.toUpperCase();
+  const defaultCountry = localeCountry && channelContext.countries.includes(localeCountry)
+    ? localeCountry
+    : channelContext.defaultCountry;
+
   return {
     locale,
     paths: buildCommerceUtilityPaths(locale),
+    countries: channelContext.countries,
+    ...(defaultCountry ? { defaultCountry } : {}),
   };
 }
 

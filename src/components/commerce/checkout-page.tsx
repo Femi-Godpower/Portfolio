@@ -4,10 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import type { Address } from "@ominity/api-typescript/models/commerce/address";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import {
-  commerceCartItemCurrency,
   commerceOrderId,
   commerceCartItemId,
   commerceCartItemQuantity,
@@ -17,25 +17,213 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney } from "@/lib/ominity/commerce";
 import { emitCommerceEvent } from "@/lib/ominity/commerce/events";
 import { useAuth } from "@/components/auth";
 
-interface CheckoutAddressDraft {
+type CheckoutAddressDraft = {
   firstName: string;
   lastName: string;
   street: string;
+  number: string;
+  additional: string;
   city: string;
   postalCode: string;
+  region: string;
   country: string;
   phone: string;
-}
+};
 
 type CheckoutStep = 1 | 2 | 3;
 type CheckoutMode = "guest" | "authenticated";
 
+function normalizeCountryCodes(countries: ReadonlyArray<string>): ReadonlyArray<string> {
+  return Array.from(new Set(countries
+    .map((country) => country.trim().toUpperCase())
+    .filter((country) => /^[A-Z]{2}$/.test(country))));
+}
+
+function resolveAddressCountry(
+  country: string | undefined,
+  countries: ReadonlyArray<string>,
+): string {
+  const normalized = country?.trim().toUpperCase();
+  return normalized && countries.includes(normalized)
+    ? normalized
+    : countries[0] ?? "";
+}
+
+function createAddressDraft(country: string): CheckoutAddressDraft {
+  return {
+    firstName: "",
+    lastName: "",
+    street: "",
+    number: "",
+    additional: "",
+    city: "",
+    postalCode: "",
+    region: "",
+    country,
+    phone: "",
+  };
+}
+
+function isAddressComplete(
+  address: CheckoutAddressDraft,
+  countries: ReadonlyArray<string>,
+): boolean {
+  return address.firstName.trim().length >= 2
+    && address.lastName.trim().length >= 2
+    && address.street.trim().length >= 2
+    && address.number.trim().length >= 1
+    && address.city.trim().length >= 2
+    && address.postalCode.trim().length >= 2
+    && countries.includes(address.country.trim().toUpperCase());
+}
+
+function toOrderAddress(address: CheckoutAddressDraft): Address {
+  return {
+    firstName: address.firstName.trim(),
+    lastName: address.lastName.trim(),
+    street: address.street.trim(),
+    number: address.number.trim(),
+    additional: address.additional.trim(),
+    city: address.city.trim(),
+    postalCode: address.postalCode.trim(),
+    region: address.region.trim(),
+    country: address.country.trim().toUpperCase(),
+  };
+}
+
+function addressHasEnteredDetails(address: CheckoutAddressDraft): boolean {
+  return [
+    address.firstName,
+    address.lastName,
+    address.street,
+    address.number,
+    address.additional,
+    address.city,
+    address.postalCode,
+    address.region,
+    address.phone,
+  ].some((value) => value.trim().length > 0);
+}
+
+function CheckoutAddressFields(props: {
+  readonly address: CheckoutAddressDraft;
+  readonly countries: ReadonlyArray<string>;
+  readonly idPrefix: string;
+  readonly onChange: (address: CheckoutAddressDraft) => void;
+}) {
+  const update = (field: keyof CheckoutAddressDraft, value: string) => {
+    props.onChange({ ...props.address, [field]: value });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2">
+        <Input
+          value={props.address.firstName}
+          onChange={(event) => update("firstName", event.target.value)}
+          placeholder="First name"
+          autoComplete={`${props.idPrefix} given-name`}
+        />
+        <Input
+          value={props.address.lastName}
+          onChange={(event) => update("lastName", event.target.value)}
+          placeholder="Last name"
+          autoComplete={`${props.idPrefix} family-name`}
+        />
+      </div>
+      <div className="grid gap-3 md:grid-cols-[1fr_10rem]">
+        <Input
+          value={props.address.street}
+          onChange={(event) => update("street", event.target.value)}
+          placeholder="Street"
+          autoComplete={`${props.idPrefix} address-line1`}
+        />
+        <Input
+          value={props.address.number}
+          onChange={(event) => update("number", event.target.value)}
+          placeholder="House number"
+        />
+      </div>
+      <Input
+        value={props.address.additional}
+        onChange={(event) => update("additional", event.target.value)}
+        placeholder="Address addition (optional)"
+        autoComplete={`${props.idPrefix} address-line2`}
+      />
+      <div className="grid gap-3 md:grid-cols-3">
+        <Input
+          value={props.address.postalCode}
+          onChange={(event) => update("postalCode", event.target.value)}
+          placeholder="Postal code"
+          autoComplete={`${props.idPrefix} postal-code`}
+        />
+        <Input
+          value={props.address.city}
+          onChange={(event) => update("city", event.target.value)}
+          placeholder="City"
+          autoComplete={`${props.idPrefix} address-level2`}
+        />
+        <label className="grid gap-1">
+          <span className="sr-only">Country</span>
+          <select
+            aria-label={`${props.idPrefix === "billing" ? "Billing" : "Shipping"} country`}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            value={props.address.country}
+            disabled={props.countries.length === 0}
+            autoComplete={`${props.idPrefix} country`}
+            onChange={(event) => update("country", event.currentTarget.value)}
+          >
+            <option value="" disabled>
+              {props.countries.length > 0 ? "Select country" : "No countries available"}
+            </option>
+            {props.countries.map((country) => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <Input
+        value={props.address.region}
+        onChange={(event) => update("region", event.target.value)}
+        placeholder="Region (optional)"
+        autoComplete={`${props.idPrefix} address-level1`}
+      />
+      <Input
+        value={props.address.phone}
+        onChange={(event) => update("phone", event.target.value)}
+        placeholder="Phone (optional)"
+        autoComplete={`${props.idPrefix} tel`}
+      />
+    </div>
+  );
+}
+
+function CheckoutAddressSummary(props: {
+  readonly address: CheckoutAddressDraft;
+}) {
+  return (
+    <div>
+      <p className="font-medium">{props.address.firstName} {props.address.lastName}</p>
+      <p>{props.address.street} {props.address.number}</p>
+      {props.address.additional.trim().length > 0 && <p>{props.address.additional.trim()}</p>}
+      <p>{props.address.postalCode} {props.address.city}</p>
+      {props.address.region.trim().length > 0 && <p>{props.address.region.trim()}</p>}
+      <p>{props.address.country}</p>
+      {props.address.phone.trim().length > 0 && <p>{props.address.phone.trim()}</p>}
+    </div>
+  );
+}
+
 export interface CommerceCheckoutPageProps {
+  readonly countries: ReadonlyArray<string>;
+  readonly defaultCountry?: string;
   readonly paths: {
     readonly checkout: string;
     readonly cart: string;
@@ -54,20 +242,20 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
   const router = useRouter();
   const commerce = useCommerce();
   const auth = useAuth();
+  const countries = useMemo(() => normalizeCountryCodes(props.countries), [props.countries]);
+  const initialCountry = resolveAddressCountry(props.defaultCountry, countries);
 
   const [step, setStep] = useState<CheckoutStep>(1);
-  const [mode, setMode] = useState<CheckoutMode>("guest");
+  const [modeOverride, setMode] = useState<CheckoutMode | null>(null);
   const [email, setEmail] = useState("");
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | "new">("new");
-  const [address, setAddress] = useState<CheckoutAddressDraft>({
-    firstName: "",
-    lastName: "",
-    street: "",
-    city: "",
-    postalCode: "",
-    country: "",
-    phone: "",
-  });
+  const [billingAddress, setBillingAddress] = useState<CheckoutAddressDraft>(() => (
+    createAddressDraft(initialCountry)
+  ));
+  const [separateShippingAddress, setSeparateShippingAddress] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<CheckoutAddressDraft>(() => (
+    createAddressDraft(initialCountry)
+  ));
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -75,11 +263,10 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
 
   const hasSession = auth.session !== null;
   const checkoutBlockedByAuth = props.features.auth && !props.features.guestCheckout && !hasSession;
+  const mode: CheckoutMode = modeOverride
+    ?? (hasSession && props.features.auth ? "authenticated" : "guest");
 
-  const cartCurrency = useMemo(
-    () => commerce.cartCurrency ?? "EUR",
-    [commerce.cartCurrency],
-  );
+  const cartCurrency = commerce.cartCurrency;
 
   const resolvedEmail = useMemo(() => {
     if (mode === "authenticated" && hasSession) {
@@ -87,12 +274,6 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
     }
     return email.trim();
   }, [auth.session?.email, email, hasSession, mode]);
-
-  useEffect(() => {
-    if (hasSession && props.features.auth) {
-      setMode("authenticated");
-    }
-  }, [hasSession, props.features.auth]);
 
   useEffect(() => {
     if (!commerce.ready || !auth.ready || commerce.cart.length === 0 || hasEmittedCheckoutStarted.current) {
@@ -104,13 +285,14 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
       mode: hasSession ? "authenticated" : "guest",
       cartCount: commerce.cartCount,
       cartSubtotal: commerce.cartSubtotal,
-      ...(commerce.cart[0] ? { currency: commerceCartItemCurrency(commerce.cart[0]) } : {}),
+      ...(commerce.cartCurrency ? { currency: commerce.cartCurrency } : {}),
       ...(commerce.promotionCodes.length > 0 ? { promotionCodes: commerce.promotionCodes } : {}),
     });
   }, [
     auth.ready,
     commerce.cart,
     commerce.cartCount,
+    commerce.cartCurrency,
     commerce.cartSubtotal,
     commerce.promotionCodes,
     commerce.ready,
@@ -169,13 +351,16 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
       return;
     }
 
-    setAddress({
+    setBillingAddress({
       firstName: selected.firstName,
       lastName: selected.lastName,
       street: selected.street,
+      number: selected.number,
+      additional: selected.additional,
       city: selected.city,
       postalCode: selected.postalCode,
-      country: selected.country,
+      region: selected.region,
+      country: resolveAddressCountry(selected.country, countries),
       phone: selected.phone ?? "",
     });
   };
@@ -193,15 +378,18 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
     }
 
     if (step === 2) {
-      if (
-        address.firstName.trim().length < 2
-        || address.lastName.trim().length < 2
-        || address.street.trim().length < 4
-        || address.city.trim().length < 2
-        || address.postalCode.trim().length < 2
-        || address.country.trim().length < 2
-      ) {
-        setMessage("Please complete all required address fields.");
+      if (countries.length === 0) {
+        setMessage("Checkout is unavailable because this channel has no active countries.");
+        return;
+      }
+
+      if (!isAddressComplete(billingAddress, countries)) {
+        setMessage("Please complete all required billing address fields.");
+        return;
+      }
+
+      if (separateShippingAddress && !isAddressComplete(shippingAddress, countries)) {
+        setMessage("Please complete all required shipping address fields.");
         return;
       }
 
@@ -217,30 +405,25 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
       return;
     }
 
+    if (
+      !isAddressComplete(billingAddress, countries)
+      || (separateShippingAddress && !isAddressComplete(shippingAddress, countries))
+    ) {
+      setMessage("Please review the billing and shipping addresses.");
+      setStep(2);
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const orderBillingAddress = toOrderAddress(billingAddress);
+      const orderShippingAddress = separateShippingAddress
+        ? toOrderAddress(shippingAddress)
+        : orderBillingAddress;
       const order = await commerce.createOrder({
         email: finalEmail,
-        fullName: `${address.firstName} ${address.lastName}`.trim(),
-        address: `${address.street}, ${address.postalCode} ${address.city}, ${address.country}`,
-        shippingAddress: {
-          firstName: address.firstName.trim(),
-          lastName: address.lastName.trim(),
-          street: address.street.trim(),
-          city: address.city.trim(),
-          postalCode: address.postalCode.trim(),
-          country: address.country.trim(),
-          ...(address.phone.trim().length > 0 ? { phone: address.phone.trim() } : {}),
-        },
-        billingAddress: {
-          firstName: address.firstName.trim(),
-          lastName: address.lastName.trim(),
-          street: address.street.trim(),
-          city: address.city.trim(),
-          postalCode: address.postalCode.trim(),
-          country: address.country.trim(),
-          ...(address.phone.trim().length > 0 ? { phone: address.phone.trim() } : {}),
-        },
+        shippingAddress: orderShippingAddress,
+        billingAddress: orderBillingAddress,
         ...(notes.trim().length > 0 ? { notes: notes.trim() } : {}),
       });
 
@@ -251,14 +434,17 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
 
       if (normalizedMode === "authenticated" && hasSession) {
         auth.saveAddress({
-          label: `${address.street.trim()}, ${address.city.trim()}`,
-          firstName: address.firstName.trim(),
-          lastName: address.lastName.trim(),
-          street: address.street.trim(),
-          city: address.city.trim(),
-          postalCode: address.postalCode.trim(),
-          country: address.country.trim(),
-          ...(address.phone.trim().length > 0 ? { phone: address.phone.trim() } : {}),
+          label: `${billingAddress.street.trim()} ${billingAddress.number.trim()}, ${billingAddress.city.trim()}`,
+          firstName: billingAddress.firstName.trim(),
+          lastName: billingAddress.lastName.trim(),
+          street: billingAddress.street.trim(),
+          number: billingAddress.number.trim(),
+          additional: billingAddress.additional.trim(),
+          city: billingAddress.city.trim(),
+          postalCode: billingAddress.postalCode.trim(),
+          region: billingAddress.region.trim(),
+          country: billingAddress.country.trim().toUpperCase(),
+          ...(billingAddress.phone.trim().length > 0 ? { phone: billingAddress.phone.trim() } : {}),
         });
       }
 
@@ -322,7 +508,7 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
                   type="email"
                 />
               )}
-              <Button onClick={nextStep}>Continue to shipping</Button>
+              <Button onClick={nextStep}>Continue to address</Button>
             </div>
           )}
 
@@ -330,7 +516,7 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
             <div className="space-y-3">
               {normalizedMode === "authenticated" && auth.savedAddresses.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Saved addresses</p>
+                  <p className="text-sm font-medium">Saved billing addresses</p>
                   <div className="flex flex-wrap gap-2">
                     {auth.savedAddresses.map((entry) => (
                       <Button
@@ -356,45 +542,47 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
                 </div>
               )}
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <Input
-                  value={address.firstName}
-                  onChange={(event) => setAddress((previous) => ({ ...previous, firstName: event.target.value }))}
-                  placeholder="First name"
-                />
-                <Input
-                  value={address.lastName}
-                  onChange={(event) => setAddress((previous) => ({ ...previous, lastName: event.target.value }))}
-                  placeholder="Last name"
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Billing address</p>
+                <CheckoutAddressFields
+                  address={billingAddress}
+                  countries={countries}
+                  idPrefix="billing"
+                  onChange={setBillingAddress}
                 />
               </div>
-              <Input
-                value={address.street}
-                onChange={(event) => setAddress((previous) => ({ ...previous, street: event.target.value }))}
-                placeholder="Street and house number"
-              />
-              <div className="grid gap-3 md:grid-cols-3">
-                <Input
-                  value={address.postalCode}
-                  onChange={(event) => setAddress((previous) => ({ ...previous, postalCode: event.target.value }))}
-                  placeholder="Postal code"
+
+              <div className="flex items-center gap-3 rounded-md border p-3">
+                <Switch
+                  id="separate-shipping-address"
+                  checked={separateShippingAddress}
+                  onCheckedChange={(checked) => {
+                    if (checked && !addressHasEnteredDetails(shippingAddress)) {
+                      setShippingAddress({ ...billingAddress });
+                    }
+                    setSeparateShippingAddress(checked);
+                  }}
                 />
-                <Input
-                  value={address.city}
-                  onChange={(event) => setAddress((previous) => ({ ...previous, city: event.target.value }))}
-                  placeholder="City"
-                />
-                <Input
-                  value={address.country}
-                  onChange={(event) => setAddress((previous) => ({ ...previous, country: event.target.value }))}
-                  placeholder="Country code"
-                />
+                <Label htmlFor="separate-shipping-address">Use a separate shipping address</Label>
               </div>
-              <Input
-                value={address.phone}
-                onChange={(event) => setAddress((previous) => ({ ...previous, phone: event.target.value }))}
-                placeholder="Phone (optional)"
-              />
+
+              {separateShippingAddress && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Shipping address</p>
+                  <CheckoutAddressFields
+                    address={shippingAddress}
+                    countries={countries}
+                    idPrefix="shipping"
+                    onChange={setShippingAddress}
+                  />
+                </div>
+              )}
+
+              {countries.length === 0 && (
+                <p className="text-sm text-destructive">
+                  Checkout is unavailable because this channel has no active countries.
+                </p>
+              )}
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => setStep(1)}>
                   Back
@@ -406,13 +594,22 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
 
           {step === 3 && (
             <div className="space-y-3">
-              <div className="rounded-md border p-3 text-sm">
-                <p className="font-medium">{address.firstName} {address.lastName}</p>
-                <p>{address.street}</p>
-                <p>{address.postalCode} {address.city}</p>
-                <p>{address.country}</p>
-                {address.phone.trim().length > 0 && <p>{address.phone.trim()}</p>}
-                <p className="pt-2 text-muted-foreground">{resolvedEmail}</p>
+              <div className="space-y-4 rounded-md border p-3 text-sm">
+                <div>
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Billing address
+                  </p>
+                  <CheckoutAddressSummary address={billingAddress} />
+                </div>
+                {separateShippingAddress && (
+                  <div className="border-t pt-3">
+                    <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Shipping address
+                    </p>
+                    <CheckoutAddressSummary address={shippingAddress} />
+                  </div>
+                )}
+                <p className="border-t pt-3 text-muted-foreground">{resolvedEmail}</p>
               </div>
               <Textarea
                 value={notes}
@@ -450,12 +647,12 @@ export function CommerceCheckoutPage(props: CommerceCheckoutPageProps) {
           {commerce.cart.map((item) => (
             <div key={commerceCartItemId(item)} className="flex items-center justify-between text-sm">
               <span>{commerceCartItemTitle(item)} × {commerceCartItemQuantity(item)}</span>
-              <span>{formatMoney(commerceCartItemTotalPrice(item), commerceCartItemCurrency(item))}</span>
+              <span>{formatMoney(commerceCartItemTotalPrice(item), cartCurrency)}</span>
             </div>
           ))}
           <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
             <span>Total</span>
-            <span>{formatMoney(commerce.cartSubtotal, cartCurrency)}</span>
+            <span>{formatMoney(commerce.cartTotal, cartCurrency)}</span>
           </div>
           {props.features.auth && hasSession && (
             <Link href={props.paths.account as Route} className="text-xs text-muted-foreground hover:underline">

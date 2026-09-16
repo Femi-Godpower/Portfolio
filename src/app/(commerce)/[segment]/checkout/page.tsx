@@ -7,7 +7,7 @@ import {
   buildCommerceFeatureMetadata,
   generateFixedCommerceStaticParamsForVariant,
   resolveCommerceFeaturePage,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 
 interface CheckoutPageProps {
@@ -61,6 +61,8 @@ export default async function CheckoutPageRoute({ params }: CheckoutPageProps) {
 
   return (
     <CommerceCheckoutPage
+      countries={resolved.countries}
+      {...(resolved.defaultCountry ? { defaultCountry: resolved.defaultCountry } : {})}
       paths={{
         checkout: resolved.paths.checkout,
         cart: resolved.paths.cart,

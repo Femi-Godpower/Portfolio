@@ -8,7 +8,7 @@ import {
   listResolvedCommerceCategories,
   listResolvedCommerceProducts,
   resolveCommerceFeaturePage,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 
 interface ProductsPageProps {
   params: Promise<{

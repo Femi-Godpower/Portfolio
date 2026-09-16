@@ -56,11 +56,12 @@ Folder boundaries are intentionally explicit:
 
 This starter commerce implementation provides:
 
-- server API endpoints under `/api/commerce/*`
+- one package-owned catch-all API adapter at `/api/commerce/*`
 - API-backed cart and checkout flows
 - local-only wishlist state (until wishlist API support is added)
 - product/category example routes with locale strategy support
 - step-based checkout with guest or authenticated mode
+- billing and optional separate shipping addresses, with country-code selectors sourced from the current channel's active countries
 
 ## Starter API contract
 
@@ -69,7 +70,9 @@ This starter commerce implementation provides:
 - `PATCH/DELETE /api/commerce/cart/items/:itemId`
 - `POST /api/commerce/checkout`
 - `GET /api/commerce/orders/:orderId`
-- `GET /api/commerce/orders/:orderId/payments`
+- `GET/POST /api/commerce/orders/:orderId/payments`
+- `GET /api/commerce/payments/:paymentId`
+- `GET /api/commerce/payment-methods/:methodId/issuers/:issuerId?`
 - `GET /api/commerce/payment-methods`
 - `GET /api/commerce/shipping-methods`
 - `POST /api/auth/login`
@@ -87,4 +90,4 @@ This starter commerce implementation provides:
 ## Checkout payload mapping
 
 `/api/commerce/checkout` accepts generic `orderData` pass-through plus convenience fields (`email`, `notes`, `shippingAddress`, etc.).
-If your backend requires strict order payload fields, adapt the mapper in `src/app/api/commerce/checkout/route.ts`.
+The SDK and `@ominity/next` own payload validation and mapping. Project code only renders the checkout experience and configures the route factory.

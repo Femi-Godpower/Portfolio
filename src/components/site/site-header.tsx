@@ -1,5 +1,5 @@
 import { getStarterChannelContext } from "@/lib/ominity/site";
-import { listCommerceCategories } from "@/lib/ominity/commerce";
+import { listCommerceCategories } from "@/lib/ominity/commerce/server";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 import { SiteHeaderClient } from "@/components/site/site-header-client";
 
@@ -14,9 +14,9 @@ export async function SiteHeader() {
     .sort((left, right) => left.name.localeCompare(right.name, undefined, { sensitivity: "base" }))
     .slice(0, 5)
     .map((entry) => ({
-      id: entry.id,
+      id: String(entry.id),
       name: entry.name,
-      routes: entry.routes,
+      routes: entry.routes as unknown as Parameters<typeof SiteHeaderClient>[0]["categories"][number]["routes"],
     }));
 
   return (
@@ -38,6 +38,7 @@ export async function SiteHeader() {
       enableCommerceWishlist={config.enableCommerceWishlist}
       enableCommerceCheckout={config.enableCommerceCheckout}
       enableAuth={config.enableAuth}
+      enableCustomerAccounts={config.enableCustomerAccounts}
     />
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
-import { useCommerce, type CommerceOrder, type CommercePayment } from "@/components/commerce/commerce-provider";
+import { useCommerce, type Order, type Payment } from "@/components/commerce/commerce-provider";
 import {
   commerceOrderCurrency,
   commerceOrderId,
@@ -27,8 +27,8 @@ export interface CommercePaymentPageProps {
 
 export function CommercePaymentPage(props: CommercePaymentPageProps) {
   const commerce = useCommerce();
-  const [order, setOrder] = useState<CommerceOrder | null>(null);
-  const [payments, setPayments] = useState<ReadonlyArray<CommercePayment>>([]);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [payments, setPayments] = useState<ReadonlyArray<Payment>>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 

@@ -7,7 +7,6 @@ import { useMemo, useState } from "react";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import {
-  commerceCartItemCurrency,
   commerceCartItemId,
   commerceCartItemQuantity,
   commerceCartItemTitle,
@@ -40,8 +39,10 @@ export function CartDrawer(props: CartDrawerProps) {
   const commerce = useCommerce();
   const [open, setOpen] = useState(false);
 
-  const currency = commerce.cartCurrency ?? "EUR";
-  const subtotal = useMemo(() => formatMoney(commerce.cartSubtotal, currency), [commerce.cartSubtotal, currency]);
+  const subtotal = useMemo(
+    () => formatMoney(commerce.cartSubtotal, commerce.cartCurrency),
+    [commerce.cartSubtotal, commerce.cartCurrency],
+  );
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
@@ -79,7 +80,7 @@ export function CartDrawer(props: CartDrawerProps) {
                     <div className="space-y-1">
                       <p className="text-sm font-medium">{commerceCartItemTitle(item)}</p>
                       <p className="text-xs text-muted-foreground">
-                        Qty {commerceCartItemQuantity(item)} · {formatMoney(commerceCartItemTotalPrice(item), commerceCartItemCurrency(item))}
+                        Qty {commerceCartItemQuantity(item)} · {formatMoney(commerceCartItemTotalPrice(item), commerce.cartCurrency)}
                       </p>
                     </div>
                     <Button

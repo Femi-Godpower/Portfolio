@@ -531,6 +531,8 @@ export const MOCK_CHANNEL: CmsChannel = {
   id: "channel-starter",
   identifier: "starter",
   name: "Starter Channel",
+  active: true,
+  maintenance: false,
   defaultLanguageCode: "en",
   languages: [
     {
@@ -565,6 +567,15 @@ export const MOCK_CHANNEL: CmsChannel = {
       default: true,
     },
   ],
+  details: {
+    type: {
+      technicalName: "headless",
+      name: "Headless",
+    },
+    domains: [{ url: "http://localhost:3000" }],
+    bindCustomersToChannel: false,
+    maintenance: false,
+  },
 };
 
 const findPageByPath = (path: string, locale: string): CmsPage | null => {

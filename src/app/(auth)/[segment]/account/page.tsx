@@ -59,6 +59,7 @@ export default async function AccountPageRoute({ params }: AccountPageProps) {
 
   return (
     <AuthAccountPage
+      language={resolved.locale}
       paths={{
         login: resolved.paths.login,
         register: resolved.paths.register,
@@ -70,6 +71,7 @@ export default async function AccountPageRoute({ params }: AccountPageProps) {
       features={{
         wishlist: config.enableCommerceWishlist,
         checkout: config.enableCommerceCheckout,
+        customerAccounts: config.enableCustomerAccounts,
       }}
     />
   );

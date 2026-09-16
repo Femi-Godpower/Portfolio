@@ -7,7 +7,7 @@ import {
   buildCommerceFeatureMetadata,
   generateFixedCommerceStaticParamsForVariant,
   resolveCommerceFeaturePage,
-} from "@/lib/ominity/commerce";
+} from "@/lib/ominity/commerce/server";
 
 interface PaymentPageProps {
   params: Promise<{

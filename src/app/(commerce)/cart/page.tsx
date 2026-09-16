@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CommerceCartPage } from "@/components/commerce/cart-page";
 import { buildAuthUtilityPaths } from "@/lib/ominity/auth";
-import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce";
+import { buildCommerceFeatureMetadata, resolveCommerceFeaturePage } from "@/lib/ominity/commerce/server";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 
 export async function generateMetadata(): Promise<Metadata> {

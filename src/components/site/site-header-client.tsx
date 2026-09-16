@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 import { useCommerce } from "@/components/commerce/commerce-provider";
+import { AccountSwitcher } from "@/components/account/account-switcher";
 import { CartDrawer } from "@/components/site/cart-drawer";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import {
@@ -59,6 +60,7 @@ interface SiteHeaderClientProps {
   readonly enableCommerceWishlist: boolean;
   readonly enableCommerceCheckout: boolean;
   readonly enableAuth: boolean;
+  readonly enableCustomerAccounts: boolean;
 }
 
 const CATEGORY_TEMPLATE_BY_LOCALE = localizedCommerceTemplateMapForRoute("category");
@@ -583,6 +585,8 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
               )}
             </Link>
           )}
+
+          {props.enableCustomerAccounts && <AccountSwitcher className="hidden md:block" />}
 
           {props.enableAuth && (
             <Link

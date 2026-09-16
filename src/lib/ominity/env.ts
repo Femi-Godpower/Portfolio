@@ -1,20 +1,16 @@
 import type {
   CmsCanonicalRedirectPolicy,
-  CmsLocale,
   CmsLocaleSegmentStrategy,
   StringLinkStrategy,
 } from "@ominity/next/cms";
 import type { HomeLocaleRedirectMode as StarterHomeLocaleRedirectMode } from "@ominity/next/next";
 
-const DEFAULT_LOCALES: ReadonlyArray<CmsLocale> = [
-  { code: "en", language: "en", label: "English", default: true },
-  { code: "nl", language: "nl", label: "Nederlands" },
-];
-
 const DEFAULT_REVALIDATE_SECONDS = 300;
 const DEFAULT_COMMERCE_LIST_LIMIT = 250;
 const DEFAULT_AUTH_COOKIE_NAME = "ominity_auth_session";
 const DEFAULT_AUTH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const DEFAULT_ACTIVE_CUSTOMER_COOKIE_NAME = "ominity_active_customer";
+const DEFAULT_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const DEFAULT_CART_COOKIE_NAME = "ominity_cart_id";
 const DEFAULT_CART_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
@@ -105,13 +101,10 @@ export interface StarterOminityConfig {
   readonly siteUrl: string;
   readonly useMockData: boolean;
   readonly debugLogs: boolean;
-  readonly debugBar: boolean;
+  readonly devTool: boolean;
   readonly strictMissingComponents: boolean;
   readonly apiUrl?: string;
   readonly apiKey?: string;
-  readonly channelId?: string;
-  readonly defaultLocale: string;
-  readonly locales: ReadonlyArray<CmsLocale>;
   readonly localeSegmentStrategy: CmsLocaleSegmentStrategy;
   readonly canonicalRedirectPolicy: CmsCanonicalRedirectPolicy;
   readonly stringLinkStrategy: StringLinkStrategy;
@@ -131,6 +124,7 @@ export interface StarterOminityConfig {
   readonly enableCommerceCheckout: boolean;
   readonly enableCommercePayment: boolean;
   readonly enableAuth: boolean;
+  readonly enableCustomerAccounts: boolean;
   readonly checkoutAllowGuest: boolean;
   readonly commerceListLimit: number;
   readonly authClientId?: string;
@@ -139,6 +133,8 @@ export interface StarterOminityConfig {
   readonly authSessionSecret?: string;
   readonly authCookieName: string;
   readonly authCookieMaxAgeSeconds: number;
+  readonly activeCustomerCookieName: string;
+  readonly activeCustomerCookieMaxAgeSeconds: number;
   readonly cartCookieName: string;
   readonly cartCookieMaxAgeSeconds: number;
 }
@@ -150,13 +146,6 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
     return cachedConfig;
   }
 
-  const locales = DEFAULT_LOCALES;
-
-  const configuredDefaultLocale = process.env.OMINITY_DEFAULT_LOCALE;
-  const defaultLocale = configuredDefaultLocale
-    ?? locales.find((locale) => locale.default)?.code
-    ?? locales[0]?.code
-    ?? "en";
   const enableCommerce = toBoolean(process.env.OMINITY_FEATURE_COMMERCE, true);
   const enableCommerceProducts = enableCommerce
     && toBoolean(process.env.OMINITY_FEATURE_COMMERCE_PRODUCTS, true);
@@ -171,6 +160,8 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
   const enableCommercePayment = enableCommerce
     && toBoolean(process.env.OMINITY_FEATURE_PAYMENT, true);
   const enableAuth = toBoolean(process.env.OMINITY_FEATURE_AUTH, true);
+  const enableCustomerAccounts = enableAuth
+    && toBoolean(process.env.OMINITY_FEATURE_CUSTOMER_ACCOUNTS, true);
   const checkoutAllowGuest = toBoolean(process.env.OMINITY_CHECKOUT_ALLOW_GUEST, true);
 
   cachedConfig = {
@@ -178,7 +169,10 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
     useMockData: toBoolean(process.env.OMINITY_USE_MOCK_DATA, true),
     debugLogs: toBoolean(process.env.OMINITY_DEBUG_LOGS, false),
-    debugBar: toBoolean(process.env.OMINITY_DEBUG_BAR, (process.env.NODE_ENV ?? "development") !== "production"),
+    devTool: toBoolean(
+      process.env.OMINITY_DEV_TOOL,
+      toBoolean(process.env.OMINITY_DEBUG_BAR, (process.env.NODE_ENV ?? "development") !== "production"),
+    ),
     strictMissingComponents: toBoolean(process.env.OMINITY_STRICT_COMPONENTS, true),
     ...(typeof process.env.OMINITY_API_URL === "string"
       ? { apiUrl: process.env.OMINITY_API_URL }
@@ -186,11 +180,6 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
     ...(typeof process.env.OMINITY_API_KEY === "string"
       ? { apiKey: process.env.OMINITY_API_KEY }
       : {}),
-    ...(typeof process.env.OMINITY_CHANNEL_ID === "string" && process.env.OMINITY_CHANNEL_ID.length > 0
-      ? { channelId: process.env.OMINITY_CHANNEL_ID }
-      : {}),
-    defaultLocale,
-    locales,
     localeSegmentStrategy: toLocaleStrategy(process.env.OMINITY_LOCALE_SEGMENT_STRATEGY),
     canonicalRedirectPolicy: toCanonicalPolicy(process.env.OMINITY_CANONICAL_REDIRECT_POLICY),
     stringLinkStrategy: toStringLinkStrategy(process.env.OMINITY_STRING_LINK_STRATEGY),
@@ -215,6 +204,7 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
     enableCommerceCheckout,
     enableCommercePayment,
     enableAuth,
+    enableCustomerAccounts,
     checkoutAllowGuest,
     commerceListLimit: toNumber(
       process.env.OMINITY_COMMERCE_LIST_LIMIT,
@@ -236,6 +226,12 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
     authCookieMaxAgeSeconds: toNumber(
       process.env.OMINITY_AUTH_COOKIE_MAX_AGE_SECONDS,
       DEFAULT_AUTH_COOKIE_MAX_AGE_SECONDS,
+    ),
+    activeCustomerCookieName: toNonEmptyString(process.env.OMINITY_ACTIVE_CUSTOMER_COOKIE_NAME)
+      ?? DEFAULT_ACTIVE_CUSTOMER_COOKIE_NAME,
+    activeCustomerCookieMaxAgeSeconds: toNumber(
+      process.env.OMINITY_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS,
+      DEFAULT_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS,
     ),
     cartCookieName: toNonEmptyString(process.env.OMINITY_CART_COOKIE_NAME) ?? DEFAULT_CART_COOKIE_NAME,
     cartCookieMaxAgeSeconds: toNumber(

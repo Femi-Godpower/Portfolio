@@ -6,7 +6,7 @@ import type { Route } from "next";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMoney } from "@/lib/ominity/commerce";
+import { formatCatalogPrice } from "@/lib/ominity/commerce";
 
 export interface CommerceWishlistPageProps {
   readonly paths: {
@@ -50,13 +50,15 @@ export function CommerceWishlistPage(props: CommerceWishlistPageProps) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {commerce.wishlist.map((item) => (
-            <Card key={item.id}>
+            <Card key={item.product.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription>SKU {item.sku}</CardDescription>
+                <CardTitle className="text-lg">{item.product.title}</CardTitle>
+                <CardDescription>SKU {item.product.sku}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm font-medium">{formatMoney(item.unitPrice, item.currency)}</p>
+                <p className="text-sm font-medium">
+                  {formatCatalogPrice(item.offers)}
+                </p>
                 <div className="flex flex-wrap items-center gap-2">
                   {props.features.cart && (
                     <Button
@@ -69,13 +71,15 @@ export function CommerceWishlistPage(props: CommerceWishlistPageProps) {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => commerce.removeFromWishlist(item.id)}
+                    onClick={() => commerce.removeFromWishlist(String(item.product.id))}
                   >
                     Remove
                   </Button>
-                  <Link href={item.canonicalPath as Route} className="text-sm font-medium text-primary hover:underline">
-                    View product
-                  </Link>
+                  {item.canonicalPath && (
+                    <Link href={item.canonicalPath as Route} className="text-sm font-medium text-primary hover:underline">
+                      View product
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>

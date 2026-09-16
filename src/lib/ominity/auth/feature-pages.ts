@@ -16,7 +16,7 @@ import {
   type AuthUtilityPaths,
 } from "./paths";
 
-export type AuthFeature = "login" | "register" | "account" | "mfa";
+export type AuthFeature = "login" | "register" | "account" | "mfa" | "forgotPassword" | "resetPassword";
 
 export interface ResolveAuthFeaturePageInput {
   readonly feature: AuthFeature;

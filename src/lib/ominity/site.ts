@@ -39,14 +39,16 @@ function normalizePathSegments(value: unknown): ReadonlyArray<string> {
 const config = getStarterOminityConfig();
 const productTemplateByLocale = localizedCommerceTemplateMapForRoute("product");
 const categoryTemplateByLocale = localizedCommerceTemplateMapForRoute("category");
-const cmsRouteTemplateRouting = createRoutingConfig({
-  defaultLocale: config.defaultLocale,
-  locales: config.locales,
-  localeSegmentStrategy: "none",
-  canonicalRedirectPolicy: config.canonicalRedirectPolicy,
-  trailingSlash: false,
-  basePath: "",
-});
+function createCmsRouteTemplateRouting(locale: string) {
+  return createRoutingConfig({
+    defaultLocale: locale,
+    locales: [],
+    localeSegmentStrategy: "none",
+    canonicalRedirectPolicy: config.canonicalRedirectPolicy,
+    trailingSlash: false,
+    basePath: "",
+  });
+}
 
 function resolveProductRoutePath(parameters: Readonly<Record<string, unknown>>, locale: string): string {
   const skuValue = parameters.sku;
@@ -66,7 +68,7 @@ function resolveProductRoutePath(parameters: Readonly<Record<string, unknown>>, 
 
   const slug = slugSegments.join("-");
   return buildLocalizedRoutePath({
-    routing: cmsRouteTemplateRouting,
+    routing: createCmsRouteTemplateRouting(locale),
     locale,
     templateByLocale: productTemplateByLocale,
     params: {
@@ -83,7 +85,7 @@ function resolveCategoryRoutePath(parameters: Readonly<Record<string, unknown>>,
   }
 
   return buildLocalizedRoutePath({
-    routing: cmsRouteTemplateRouting,
+    routing: createCmsRouteTemplateRouting(locale),
     locale,
     templateByLocale: categoryTemplateByLocale,
     params: {
@@ -110,7 +112,7 @@ export type { ResolveLocaleForVariantInput };
 export const cmsRouting = support.cmsRouting;
 export const cmsLinkResolver = support.cmsLinkResolver;
 export const cmsLocalizedStringLinkResolver = support.cmsLocalizedStringLinkResolver;
-export const getOminityDebugHttpClient = support.getDebugHttpClient;
+export const getOminityDevToolHttpClient = support.getDevToolHttpClient;
 export const getLiveCmsClient = support.getLiveCmsClient;
 export const getCmsClient = support.getCmsClient;
 export const getCmsPageByPath = support.getCmsPageByPath;
@@ -118,6 +120,8 @@ export const getCmsRoutes = support.getCmsRoutes;
 export const getCmsMenus = support.getCmsMenus;
 export const getMainMenu = support.getMainMenu;
 export const getStarterChannelContext = support.getChannelContext;
+export const getStarterDevToolChannelInfo = support.getDevToolChannelInfo;
+export const getSupportedChannelLocales = support.getSupportedLocales;
 export const getChannelAwareCmsRouting = support.getChannelAwareCmsRouting;
 export const resolveRequestLocale = support.resolveRequestLocale;
 export const resolveRequestSdkLanguage = support.resolveRequestSdkLanguage;
