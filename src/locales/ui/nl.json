@@ -1,12 +1,17 @@
 {
-  "brandName": "Ominity Starter",
+  "brandName": "Femi",
   "nav": {
     "contact": "Contact",
     "product": "Product",
     "category": "Categorie",
     "cart": "Winkelwagen",
     "wishlist": "Verlanglijst",
-    "account": "Account"
+    "account": "Account",
+    "home": "Home",
+    "projects": "Projecten",
+    "approach": "Aanpak",
+    "menu": "Menu openen",
+    "close": "Menu sluiten"
   },
   "switcher": {
     "languageLabel": "Taal",
@@ -32,6 +37,13 @@
     },
     "accessibility": {
       "honeypotLabel": "Laat dit veld leeg"
+    }
+  },
+  "portfolio": {
+    "cases": {
+      "client": "Klant",
+      "problem": "Probleem",
+      "outcome": "Resultaat"
     }
   }
 }

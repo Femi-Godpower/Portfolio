@@ -1,12 +1,17 @@
 {
-  "brandName": "Ominity Starter",
+  "brandName": "Femi",
   "nav": {
     "contact": "Contact",
     "product": "Product",
     "category": "Category",
     "cart": "Cart",
     "wishlist": "Wishlist",
-    "account": "Account"
+    "account": "Account",
+    "home": "Home",
+    "projects": "Projects",
+    "approach": "Approach",
+    "menu": "Open menu",
+    "close": "Close menu"
   },
   "switcher": {
     "languageLabel": "Language",
@@ -32,6 +37,13 @@
     },
     "accessibility": {
       "honeypotLabel": "Leave this field empty"
+    }
+  },
+  "portfolio": {
+    "cases": {
+      "client": "Client",
+      "problem": "Problem",
+      "outcome": "Outcome"
     }
   }
 }

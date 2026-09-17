@@ -22,7 +22,53 @@ export const asStringArray = (value: unknown): string[] => {
   return value.filter((entry): entry is string => typeof entry === "string");
 };
 
-export const isOminityForm = (value: unknown): value is OminityForm => {
+export const asRecordArray = (value: unknown): Array<Record<string, unknown>> => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(
+    (entry): entry is Record<string, unknown> =>
+      typeof entry === "object" && entry !== null && !Array.isArray(entry),
+  );
+};
+
+/**
+ * Media fields have no documented shape yet: accept a plain URL, an array
+ * (first entry wins) or an object carrying the URL under a common key.
+ */
+export const asImageUrl = (value: unknown): string => {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0 ? asImageUrl(value[0]) : "";
+  }
+
+  if (typeof value !== "object" || value === null) {
+    return "";
+  }
+
+  const record = value as Record<string, unknown>;
+  for (const key of ["url", "src", "href", "original", "path"]) {
+    const candidate = asImageUrl(record[key]);
+    if (candidate) {
+      return candidate;
+    }
+  }
+
+  for (const key of ["_links", "links", "self", "conversions"]) {
+    const candidate = asImageUrl(record[key]);
+    if (candidate) {
+      return candidate;
+    }
+  }
+
+  return "";
+};
+
+export const isOminityForm =(value: unknown): value is OminityForm => {
   if (typeof value !== "object" || value === null) {
     return false;
   }

@@ -289,6 +289,118 @@ const createSliderComponent = (locale: string) => ({
   children: [],
 });
 
+// Portfolio fixtures. Every [TEMP] string is placeholder copy, mirrored in Ominity.
+const MOCK_CASE_IMAGES = [
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80",
+  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80",
+];
+
+const createPortfolioComponents = (locale: string) => {
+  const nl = locale === "nl";
+  const numbers = nl ? ["een", "twee", "drie", "vier", "vijf"] : ["One", "Two", "Three", "Four", "Five"];
+
+  return [
+    {
+      id: `portfolio-hero-${locale}`,
+      key: "portfolio-hero",
+      type: "portfolio-hero",
+      fields: {
+        eyebrow: "Portfolio",
+        greeting: nl ? "Hey, ik ben" : "Hey I'm",
+        name: "FEMI",
+        tagline: nl ? "[TEMP] Student Bedrijfsmanagement — Brussel" : "[TEMP] Business Management student — Brussels",
+        scroll_label: "Scroll",
+        color_from: "#f093fb",
+        color_to: "#f5576c",
+      },
+      children: [],
+    },
+    {
+      id: `case-reveal-${locale}`,
+      key: "case-reveal",
+      type: "case-reveal",
+      fields: {
+        anchor: "works",
+        cases: MOCK_CASE_IMAGES.map((image, index) => ({
+          image,
+          image_alt: nl ? `[TEMP] Voorbeeld project ${numbers[index]}` : `[TEMP] Project ${numbers[index]} preview`,
+          title: `[TEMP] Project ${numbers[index]}`,
+          client: nl ? "[TEMP] Naam klant" : "[TEMP] Client name",
+          problem: nl
+            ? "[TEMP] Probleem: waar de klant mee worstelde voor het project begon."
+            : "[TEMP] Problem: what the client was struggling with before the project started.",
+          outcome: nl
+            ? "[TEMP] Resultaat: wat er veranderde na het project, liefst met een cijfer."
+            : "[TEMP] Outcome: what changed after the project, ideally with a number.",
+        })),
+      },
+      children: [],
+    },
+    {
+      id: `approach-${locale}`,
+      key: "approach",
+      type: "approach",
+      // Real copy (mirrors Ominity), not placeholders.
+      fields: nl
+        ? {
+          eyebrow: "Aanpak",
+          heading: "Oplossingen bouwen, geen features.",
+          intro: "Ik werk het best aan initiatieven waarvan het pad nog niet helemaal vastligt. Het werk is de bedrijfscontext begrijpen, bepalen wat er echt opgelost moet worden, een praktisch plan maken en betrokken blijven tot het in productie werkt.",
+          cards: [
+            { title: "De business en de randvoorwaarden begrijpen", description: "Begin bij het doel, de operationele realiteit en de randvoorwaarden die bepalen wat echt haalbaar is." },
+            { title: "Het resultaat en de prioriteiten bepalen", description: "Vertaal de uitdaging naar een concreet doel, een beslissingskader en prioriteiten voor de uitvoering." },
+            { title: "De product- en technische aanpak ontwerpen", description: "Kies de structuur, scope en architectuur die bij de business passen, in plaats van een voorkeurstack op te dringen." },
+            { title: "De juiste mensen samenbrengen", description: "Stem stakeholders en betrokkenen op elkaar af, zodat werk, verantwoordelijkheden en afwegingen vroeg zichtbaar zijn." },
+            { title: "Bouwen, valideren en lanceren", description: "Houd de uitvoering praktisch, ruim blokkades op en blijf dicht genoeg bij de implementatie om te voorkomen dat beslissingen afdrijven." },
+            { title: "Verbeteren op basis van echt gebruik", description: "Gebruik de realiteit in productie om het platform, proces of product te verfijnen, in plaats van de lancering als eindpunt te zien." },
+          ],
+        }
+        : {
+          eyebrow: "Approach",
+          heading: "Building solutions, not features.",
+          intro: "I work best on initiatives where the path is not fully defined yet. The job is to understand the business context, determine what actually needs to be solved, create a practical plan and stay involved until it works in production.",
+          cards: [
+            { title: "Understand the business and constraints", description: "Start with the objective, the operational reality and the constraints that shape what is actually viable." },
+            { title: "Define the outcome and priorities", description: "Translate the challenge into a concrete target, decision framework and delivery priorities." },
+            { title: "Design the product and technical approach", description: "Choose the structure, scope and architecture that fit the business instead of forcing a preferred stack." },
+            { title: "Bring together the right people", description: "Align stakeholders and contributors so work, responsibilities and trade-offs are visible early." },
+            { title: "Build, validate and launch", description: "Keep delivery practical, remove blockers and stay close enough to implementation to avoid decision drift." },
+            { title: "Improve based on real usage", description: "Use production reality to refine the platform, process or product rather than treating launch as the finish line." },
+          ],
+        },
+      children: [],
+    },
+    {
+      id: `site-footer-${locale}`,
+      key: "site-footer",
+      type: "site-footer",
+      fields: {
+        big_text: "FEMI",
+        links: [
+          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Projecten" : "[TEMP] Projects", url: "#works" },
+          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Aanpak" : "[TEMP] Approach", url: "#approach" },
+          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Terug naar boven" : "[TEMP] Back to top", url: "#top" },
+          { column: nl ? "[TEMP] Meer" : "[TEMP] More", label: nl ? "[TEMP] Link een" : "[TEMP] Link one", url: "#" },
+          { column: nl ? "[TEMP] Meer" : "[TEMP] More", label: nl ? "[TEMP] Link twee" : "[TEMP] Link two", url: "#" },
+        ],
+        contact_title: "[TEMP] Contact",
+        email: "[TEMP] hello@example.com",
+        phone: "[TEMP] +32 000 00 00 00",
+        location: nl ? "[TEMP] Brussel, België" : "[TEMP] Brussels, Belgium",
+        socials: [
+          { platform: "linkedin", url: "#" },
+          { platform: "instagram", url: "#" },
+          { platform: "x", url: "#" },
+        ],
+        copyright: nl ? "[TEMP] Femi Godpower. Alle rechten voorbehouden." : "[TEMP] Femi Godpower. All rights reserved.",
+      },
+      children: [],
+    },
+  ];
+};
+
 const createFormComponent = (locale: string) => ({
   id: `form-${locale}`,
   key: "form_block",
@@ -325,8 +437,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     description: "Production-ready Next.js starter for Ominity.",
     status: "published",
     components: [
-      createHeroComponent("en"),
-      createSliderComponent("en"),
+      ...createPortfolioComponents("en"),
     ],
     translations: [
       { locale: "en", path: HOME_TRANSLATIONS.en, slug: "", canonical: true },
@@ -354,8 +465,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     description: "Productieklare Next.js starter voor Ominity.",
     status: "published",
     components: [
-      createHeroComponent("nl"),
-      createSliderComponent("nl"),
+      ...createPortfolioComponents("nl"),
     ],
     translations: [
       { locale: "en", path: HOME_TRANSLATIONS.en, slug: "" },
@@ -382,7 +492,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     title: "Contact",
     description: "Contact the Ominity team.",
     status: "published",
-    components: [createFormComponent("en")],
+    components: [createHeroComponent("en"), createSliderComponent("en"), createFormComponent("en")],
     translations: [
       { locale: "en", path: CONTACT_TRANSLATIONS.en, slug: "contact", canonical: true },
       { locale: "nl", path: CONTACT_TRANSLATIONS.nl, slug: "contacteer-ons" },
@@ -405,7 +515,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     title: "Contact",
     description: "Neem contact op met het Ominity-team.",
     status: "published",
-    components: [createFormComponent("nl")],
+    components: [createHeroComponent("nl"), createSliderComponent("nl"), createFormComponent("nl")],
     translations: [
       { locale: "en", path: CONTACT_TRANSLATIONS.en, slug: "contact" },
       {

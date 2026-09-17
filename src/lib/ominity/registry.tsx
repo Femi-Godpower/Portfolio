@@ -1,10 +1,14 @@
 import type { CmsRendererOptions } from "@ominity/next/cms/rendering";
 import { createCmsRegistry, defineCmsComponent } from "@ominity/next/cms/rendering";
 
+import { ApproachBlock } from "@/components/cms/approach-block";
 import { ButtonLinkBlock } from "@/components/cms/button-link-block";
+import { CaseRevealBlock } from "@/components/cms/case-reveal-block";
 import { FormBlock } from "@/components/cms/form-block";
 import { HeroBlock } from "@/components/cms/hero-block";
+import { PortfolioHeroBlock } from "@/components/cms/portfolio-hero-block";
 import { RichTextBlock } from "@/components/cms/rich-text-block";
+import { SiteFooterBlock } from "@/components/cms/site-footer-block";
 import { SliderBlock } from "@/components/cms/slider-block";
 import { TextBlock } from "@/components/cms/text-block";
 import { TwoColumnSection } from "@/components/cms/two-column-section";
@@ -22,6 +26,11 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("slider", SliderBlock),
   defineCmsComponent("form_block", FormBlock),
   defineCmsComponent("2-column-section", TwoColumnSection),
+  // Portfolio blocks — keys match the Ominity blueprint slugs.
+  defineCmsComponent("portfolio-hero", PortfolioHeroBlock),
+  defineCmsComponent("case-reveal", CaseRevealBlock),
+  defineCmsComponent("approach", ApproachBlock),
+  defineCmsComponent("site-footer", SiteFooterBlock),
 ]);
 
 export const cmsRendererOptions: CmsRendererOptions<StarterRenderContext> = {

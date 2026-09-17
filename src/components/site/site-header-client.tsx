@@ -9,7 +9,17 @@ import {
   parseLocaleCode,
 } from "@ominity/next/cms";
 import { buildLocalizedRoutePath, buildLocalizedStaticPath } from "@ominity/next/next";
-import { ChevronDown, Heart, Menu, PackageSearch, UserCircle2 } from "lucide-react";
+import {
+  Briefcase,
+  ChevronDown,
+  Compass,
+  Heart,
+  House,
+  Mail,
+  Menu,
+  PackageSearch,
+  UserCircle2,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,7 +28,7 @@ import { useEffect, useMemo } from "react";
 import { useCommerce } from "@/components/commerce/commerce-provider";
 import { AccountSwitcher } from "@/components/account/account-switcher";
 import { CartDrawer } from "@/components/site/cart-drawer";
-import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { CircleMenu, type CircleMenuItem } from "@/components/ui/circle-menu";
 import {
   localizedCommerceSlugMapForRoute,
   localizedCommerceTemplateMapForRoute,
@@ -402,7 +412,6 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   }, [activeCountryCode, currentLocale]);
 
   const homePath = localizeRelativePath("/", currentLocale, routing);
-  const contactPath = localizeRelativePath("/contact", currentLocale, routing);
   const productsPath = localizedCommerceUtilityPath("products", currentLocale, routing);
   const cartPath = localizedCommerceUtilityPath("cart", currentLocale, routing);
   const checkoutPath = localizedCommerceUtilityPath("checkout", currentLocale, routing);
@@ -489,32 +498,36 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     navigateToLocale(nextLocale, nextCountryCode);
   };
 
-  const onCountryChange = (nextCountryCode: string) => {
-    const nextLocale = resolveLocaleForLanguageAndCountry(
-      props.locales,
-      activeLanguage,
-      nextCountryCode,
-      currentLocale,
-    );
-
-    if (props.enableCommerceCart) {
-      void commerce.setCartCountry(nextCountryCode);
-    }
-
-    navigateToLocale(nextLocale, nextCountryCode);
-  };
+  // Portfolio sections plus one item per channel language, fanned out around the menu button.
+  const menuItems: CircleMenuItem[] = [
+    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: "#top" },
+    { id: "projects", label: dictionary.nav.projects, icon: <Briefcase size={16} />, href: "#works" },
+    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: "#approach" },
+    { id: "contact", label: dictionary.nav.contact, icon: <Mail size={16} />, href: "#contact" },
+    ...(showLocaleSwitcher
+      ? languageOptions.map((entry) => ({
+        id: `language-${entry.language}`,
+        label: entry.label,
+        icon: <span className="text-xs font-semibold">{entry.language.toUpperCase()}</span>,
+        active: entry.language === activeLanguage,
+        value: entry.language,
+      }))
+      : []),
+  ];
 
   return (
-    <header className="border-b bg-background/80 backdrop-blur">
-      <div className="container flex h-14 items-center justify-between gap-3">
-        <Link href={homePath as Route} className="font-semibold">
+    // Sticks to the top of the screen; no bar, just the name and the menu button.
+    // Side padding matches the first project card (5vw desktop, 7vw stacked).
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
+      <div className="flex h-20 items-center justify-between gap-3 px-[7vw] min-[1026px]:px-[5vw]">
+        <Link
+          href={homePath as Route}
+          className="pointer-events-auto text-sm font-semibold uppercase tracking-[0.3em] text-white/80 hover:text-white"
+        >
           {dictionary.brandName}
         </Link>
 
-        <nav className="flex items-center gap-2">
-          <Link href={contactPath as Route} className="text-sm text-muted-foreground hover:text-foreground">
-            {dictionary.nav.contact}
-          </Link>
+        <nav className="pointer-events-auto flex items-center gap-2">
 
           {props.enableCommerceProducts && (
             <Link
@@ -598,28 +611,14 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             </Link>
           )}
 
-          {showLocaleSwitcher && (
-            <LocaleSwitcher
-              languageLabel={dictionary.switcher.languageLabel}
-              languageValue={activeLanguage}
-              languageOptions={languageOptions.map((entry) => ({
-                code: entry.language,
-                label: entry.label,
-              }))}
-              onLanguageChange={onLanguageChange}
-              {...(props.localeSegmentStrategy === "country-language" && activeCountryCode
-                ? {
-                  countryLabel: dictionary.switcher.countryLabel,
-                  countryValue: activeCountryCode,
-                  countryOptions: countryOptions.map((entry) => ({
-                    code: entry.code,
-                    label: entry.label,
-                  })),
-                  onCountryChange,
-                }
-                : {})}
-            />
-          )}
+          <CircleMenu
+            items={menuItems}
+            openLabel={dictionary.nav.menu}
+            closeLabel={dictionary.nav.close}
+            onSelectItem={(item) => {
+              if (item.value && item.value !== activeLanguage) onLanguageChange(item.value);
+            }}
+          />
         </nav>
       </div>
     </header>

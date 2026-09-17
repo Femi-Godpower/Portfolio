@@ -14,13 +14,13 @@ const config = getStarterOminityConfig();
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.siteUrl),
-  applicationName: "Ominity Next Starter",
+  applicationName: "Femi Godpower",
   title: {
-    default: "Ominity Next Starter",
-    template: "%s | Ominity Next Starter",
+    default: "Femi Godpower",
+    template: "%s | Femi Godpower",
   },
-  description:
-    "Production-ready Next.js starter with @ominity/next, Tailwind, shadcn, and App Router best practices.",
+  // TEMP: fallback only — the real description comes from the page SEO fields in Ominity.
+  description: "Portfolio of Femi Godpower.",
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -35,12 +35,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           devToolSnapshot={devToolSnapshot}
           customerAccountsEnabled={config.enableCustomerAccounts}
         >
-          <div className="relative flex min-h-screen flex-col">
+          <div className="page-gradient relative flex min-h-screen flex-col">
             <SiteHeader />
-            <main className="container flex-1 py-8 md:py-12">{children}</main>
-            <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-              Ominity Next Starter · Built for reusable CMS-driven projects.
-            </footer>
+            {/* Full-bleed: portfolio sections manage their own width. */}
+            <main className="flex-1">{children}</main>
+            {/* Footer comes later as its own CMS block (see Website.md). */}
             <OminityDevTool enabled={config.devTool} endpoint="/api/dev-tool/requests" />
           </div>
         </Providers>
