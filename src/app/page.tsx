@@ -8,6 +8,10 @@ import CmsCatchAllPage, { generateMetadata as generateCmsCatchAllMetadata } from
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
 
+// Resolve `/` per request. Prerendered, a failed CMS lookup during the build was
+// cached as a permanent 404 for the bare domain.
+export const dynamic = "force-dynamic";
+
 const ROOT_PARAMS = Object.freeze({ segment: [] as string[] });
 
 function detectedCountryHeader(headersStore: { get(name: string): string | null }): string | undefined {
