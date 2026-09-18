@@ -22,6 +22,8 @@ export interface PortfolioFooterData {
   location: string;
   socials: Array<{ platform: SocialPlatform; href: string }>;
   copyright: string;
+  /** Small links on the right of the bottom bar (sitemap, privacy, terms). */
+  legalLinks: Array<{ label: string; href: string }>;
 }
 
 const ACCENT = "text-[#f093fb]";
@@ -160,31 +162,44 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           ) : null}
         </div>
 
+        {data.socials.length > 0 ? (
+          <div className="flex gap-6 text-white/50">
+            {data.socials.map((social, index) => (
+              <a
+                key={`${social.platform}-${index}`}
+                href={social.href}
+                aria-label={SOCIAL_LABELS[social.platform]}
+                className="group transition-colors hover:text-[#f093fb]"
+                target={social.href.startsWith("http") ? "_blank" : undefined}
+                rel={social.href.startsWith("http") ? "noreferrer" : undefined}
+              >
+                <SocialIcon platform={social.platform} />
+              </a>
+            ))}
+          </div>
+        ) : null}
+
         <hr className="my-6 border-t border-white/10" />
 
+        {/* Copyright on the left, legal links on the right. */}
         <div className="flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
-          {data.socials.length > 0 ? (
-            <div className="flex gap-6 text-white/50">
-              {data.socials.map((social, index) => (
-                <a
-                  key={`${social.platform}-${index}`}
-                  href={social.href}
-                  aria-label={SOCIAL_LABELS[social.platform]}
-                  className="group transition-colors hover:text-[#f093fb]"
-                  target={social.href.startsWith("http") ? "_blank" : undefined}
-                  rel={social.href.startsWith("http") ? "noreferrer" : undefined}
-                >
-                  <SocialIcon platform={social.platform} />
-                </a>
-              ))}
-            </div>
-          ) : (
-            <span />
-          )}
           {data.copyright ? (
             <p className="text-center md:text-left">
               &copy; {new Date().getFullYear()} {data.copyright}
             </p>
+          ) : (
+            <span />
+          )}
+          {data.legalLinks.length > 0 ? (
+            <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+              {data.legalLinks.map((link, index) => (
+                <li key={`${link.label}-${index}`}>
+                  <a href={link.href} className="transition-colors hover:text-[#f093fb]">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           ) : null}
         </div>
       </div>

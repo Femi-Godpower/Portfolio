@@ -45,6 +45,9 @@ export function SiteFooterBlock({
       .map((entry) => ({ platform: asPlatform(entry.platform), href: asString(entry.url).trim() }))
       .filter((social) => social.href.length > 0),
     copyright: asString(component.fields.copyright).trim(),
+    legalLinks: asRecordArray(component.fields.legal_links)
+      .map((entry) => ({ label: asString(entry.label).trim(), href: asString(entry.url).trim() }))
+      .filter((link) => link.label.length > 0 && link.href.length > 0),
   };
 
   return <PortfolioFooter data={data} />;
