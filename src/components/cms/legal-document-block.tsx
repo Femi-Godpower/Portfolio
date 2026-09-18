@@ -38,10 +38,12 @@ export function LegalDocumentBlock({ component }: CmsComponentRenderProps<Starte
     .map((entry) => ({ heading: asString(entry.heading).trim(), body: asString(entry.body).trim() }))
     .filter((section) => section.heading.length > 0);
 
+  const hasToc = tocLabel.length > 0 && sections.length > 0;
+
   return (
-    // pt clears the fixed header (h-20); side padding matches the header.
-    <article className="mx-auto w-full max-w-3xl px-[7vw] pb-24 pt-32 sm:px-6 sm:pt-40">
-      <header className="mb-12">
+    // Same container as the footer. pt clears the fixed header (h-20).
+    <article className="mx-auto w-full max-w-7xl px-6 pb-24 pt-32 sm:px-14 sm:pt-40">
+      <header className="mb-12 max-w-3xl">
         {title ? (
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">{title}</h1>
         ) : null}
@@ -51,35 +53,42 @@ export function LegalDocumentBlock({ component }: CmsComponentRenderProps<Starte
         ) : null}
       </header>
 
-      {tocLabel && sections.length > 0 ? (
-        <nav aria-label={tocLabel} className="mb-16 rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
-          <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.12em] text-white/50">{tocLabel}</h2>
-          <ol className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
-            {sections.map((section, index) => (
-              <li key={index}>
-                <a
-                  href={`#section-${index + 1}`}
-                  className="text-white/70 transition-colors hover:text-[#f093fb]"
-                >
-                  <span className="mr-2 tabular-nums text-white/40">{index + 1}.</span>
-                  {section.heading}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      ) : null}
+      {/* Text left, contents right. The sidebar sticks under the header and
+          scrolls on its own when the list is taller than the screen. On
+          narrow screens the contents sit above the text instead. */}
+      <div className={hasToc ? "grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16 xl:gap-24" : undefined}>
+        <div className="max-w-3xl space-y-12">
+          {sections.map((section, index) => (
+            <section key={index} id={`section-${index + 1}`} className="scroll-mt-28">
+              <h2 className="mb-4 text-xl font-semibold text-white sm:text-2xl">
+                <span className="mr-3 tabular-nums text-[#f093fb]">{index + 1}.</span>
+                {section.heading}
+              </h2>
+              <div className="space-y-4 leading-relaxed text-white/70">{renderText(section.body)}</div>
+            </section>
+          ))}
+        </div>
 
-      <div className="space-y-12">
-        {sections.map((section, index) => (
-          <section key={index} id={`section-${index + 1}`} className="scroll-mt-28">
-            <h2 className="mb-4 text-xl font-semibold text-white sm:text-2xl">
-              <span className="mr-3 tabular-nums text-[#f093fb]">{index + 1}.</span>
-              {section.heading}
-            </h2>
-            <div className="space-y-4 leading-relaxed text-white/70">{renderText(section.body)}</div>
-          </section>
-        ))}
+        {hasToc ? (
+          <aside className="-order-1 lg:order-none lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto [scrollbar-color:rgba(255,255,255,0.15)_transparent] [scrollbar-width:thin]">
+            <nav aria-label={tocLabel} className="rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+              <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.12em] text-white/50">{tocLabel}</h2>
+              <ol className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-1">
+                {sections.map((section, index) => (
+                  <li key={index}>
+                    <a
+                      href={`#section-${index + 1}`}
+                      className="flex text-white/70 transition-colors hover:text-[#f093fb]"
+                    >
+                      <span className="w-7 shrink-0 tabular-nums text-white/40">{index + 1}.</span>
+                      <span>{section.heading}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+        ) : null}
       </div>
     </article>
   );
