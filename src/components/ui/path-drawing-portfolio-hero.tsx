@@ -5,12 +5,26 @@ import {
   useId,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 
 function cn(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(" ");
+}
+
+/**
+ * Entrance fade as a CSS animation, not JS: it plays even when the browser
+ * throttles script and animation frames (Opera GX limiter, battery saver),
+ * and the server-rendered HTML is never stuck at opacity 0.
+ */
+function entrance(durationSec: number, delaySec: number, from?: string): CSSProperties {
+  return {
+    "--path-drawing-duration": `${durationSec}s`,
+    "--path-drawing-delay": `${delaySec}s`,
+    ...(from ? { "--path-drawing-from": from } : {}),
+  } as CSSProperties;
 }
 
 type SvgPathDrawingTextAnimationProps = {
@@ -39,11 +53,22 @@ type Letter = { char: string; x: number };
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("svg raster failed"));
+    // Some browsers (blocked canvas/blob images, throttled tabs) never fire either event.
+    const timer = window.setTimeout(() => reject(new Error("svg raster timed out")), 1500);
+    img.onload = () => {
+      window.clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      window.clearTimeout(timer);
+      reject(new Error("svg raster failed"));
+    };
     img.src = url;
   });
 }
+
+/** How long the name may stay hidden while measuring before it is shown fully drawn. */
+const STATIC_FALLBACK_MS = 900;
 
 /**
  * Rasterises a prepared copy of the SVG (white strokes) and returns its pixels.
@@ -205,9 +230,18 @@ function SvgPathDrawingTextAnimation({
   const [span, setSpan] = useState<{ start: number; end: number } | null>(null);
   const [dashLengths, setDashLengths] = useState<number[] | null>(null);
   const [glyphBox, setGlyphBox] = useState<{ left: number; top: number } | null>(null);
+  // Measuring can be slow (CPU-limited browsers such as Opera GX) or never finish;
+  // after a short wait the finished name is shown statically instead of nothing.
+  const [staticFallback, setStaticFallback] = useState(false);
+  const shownStaticRef = useRef(false);
   const reduceMotion = useReducedMotion();
   const display = text.trim();
   const baselineY = viewBoxHeight / 2 + fontSize * 0.358;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setStaticFallback(true), STATIC_FALLBACK_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // 1. Split the centred word into letters at their exact rendered x positions.
   useEffect(() => {
@@ -275,21 +309,26 @@ function SvgPathDrawingTextAnimation({
       return;
     }
 
-    // Gap twice the dash, so "empty" (offset ±L) never shows a stray segment.
-    dashLengths.forEach((length, index) => {
-      const el = els[index];
-      if (!el) return;
-      el.style.strokeDasharray = `${length} ${length * 2}`;
-      el.style.strokeDashoffset = String(length);
-    });
+    // Dashes are applied on the first frame, not here: if the browser never runs
+    // animation frames (throttled or background tab), the letters stay fully drawn.
+    let dashed = false;
+    const applyDashes = () => {
+      // Gap twice the dash, so "empty" (offset ±L) never shows a stray segment.
+      dashLengths.forEach((length, index) => {
+        const el = els[index];
+        if (el) el.style.strokeDasharray = `${length} ${length * 2}`;
+      });
+      dashed = true;
+    };
 
     const drawMs = Math.max(0.4, durationSec) * 1000;
     const holdMs = Math.max(0, holdSec) * 1000;
     const restMs = Math.max(0, restSec) * 1000;
     const cycleMs = drawMs * 2 + holdMs + restMs;
     // Own clock instead of wall time, so hovering can stop it and leaving resumes
-    // from the same frame.
-    let elapsed = 0;
+    // from the same frame. If the finished name is already on screen (static
+    // fallback), start at that frame so the animation picks up without a jump.
+    let elapsed = shownStaticRef.current ? drawMs : 0;
     let last = performance.now();
     let raf = 0;
 
@@ -302,8 +341,11 @@ function SvgPathDrawingTextAnimation({
     };
 
     const tick = (now: number) => {
-      const dt = Math.min(48, now - last);
+      // Cap only real stalls (tab switches). A low cap would stretch the whole
+      // animation on low-frame-rate browsers (e.g. Opera GX's FPS/CPU limiter).
+      const dt = Math.min(250, Math.max(0, now - last));
       last = now;
+      if (!dashed) applyDashes();
       // While hovered, play on until the outline is complete, then hold that frame.
       elapsed = hoverRef.current
         ? Math.min(elapsed + dt, nextFullyDrawn(elapsed))
@@ -335,9 +377,13 @@ function SvgPathDrawingTextAnimation({
     return () => window.cancelAnimationFrame(raf);
   }, [dashLengths, durationSec, holdSec, restSec, loop, reduceMotion]);
 
+  useEffect(() => {
+    if (staticFallback && !dashLengths) shownStaticRef.current = true;
+  }, [staticFallback, dashLengths]);
+
   if (!display) return null;
 
-  const ready = Boolean(reduceMotion) || dashLengths !== null;
+  const ready = Boolean(reduceMotion) || dashLengths !== null || staticFallback;
 
   const textProps = {
     y: baselineY,
@@ -470,11 +516,8 @@ export default function PathDrawingPortfolioHero({
   className,
 }: PathDrawingPortfolioHeroProps) {
   const name = brand.trim();
-  const reduceMotion = useReducedMotion();
 
   if (!name) return null;
-
-  const instant = Boolean(reduceMotion);
 
   return (
     <section
@@ -487,23 +530,16 @@ export default function PathDrawingPortfolioHero({
     >
       <div className="relative z-10 flex w-full max-w-7xl flex-col items-center px-6 pb-24 pt-20 text-center sm:px-10 sm:pb-28">
         {eyebrow ? (
-          <motion.p
-            className="mb-6 text-[0.7rem] font-medium uppercase tracking-[0.35em] text-white/55 sm:mb-8 sm:text-xs"
-            initial={instant ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          <p
+            className="path-drawing-in mb-6 text-[0.7rem] font-medium uppercase tracking-[0.35em] text-white/55 sm:mb-8 sm:text-xs"
+            style={entrance(0.7, 0, "translateY(12px)")}
           >
             {eyebrow}
-          </motion.p>
+          </p>
         ) : null}
 
         <h1 className="sr-only">{greeting ? `${greeting} ${name}` : name}</h1>
-        <motion.div
-          className="w-full"
-          initial={instant ? false : { opacity: 0, scale: 0.985 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div className="path-drawing-in w-full" style={entrance(0.9, 0.12, "scale(0.985)")}>
           <SvgPathDrawingTextAnimation
             text={name}
             {...(greeting ? { greeting } : {})}
@@ -517,43 +553,42 @@ export default function PathDrawingPortfolioHero({
             strokeWidth={name.length > 8 ? 2.4 : 1.4}
             loop
           />
-        </motion.div>
+        </div>
 
         {tagline ? (
-          <motion.p
-            className="mt-4 max-w-md text-sm leading-relaxed text-white/65 sm:mt-6 sm:text-base"
-            initial={instant ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.75,
-              delay: 0.55,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+          <p
+            className="path-drawing-in mt-4 max-w-md text-sm leading-relaxed text-white/65 sm:mt-6 sm:text-base"
+            style={entrance(0.75, 0.55, "translateY(16px)")}
           >
             {tagline}
-          </motion.p>
+          </p>
         ) : null}
       </div>
 
       {scrollLabel ? (
-        <motion.a
+        <a
           href={scrollHref}
           aria-label={scrollLabel}
-          className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-white/40 transition-colors hover:text-white/70"
-          initial={instant ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1.1 }}
+          className="path-drawing-in absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-white/40 transition-colors hover:text-white/70"
+          style={entrance(0.6, 1.1)}
         >
           <span className="text-[0.65rem] uppercase tracking-[0.28em]">{scrollLabel}</span>
           <span
             aria-hidden
             className="path-drawing-scroll-cue block h-8 w-px origin-top bg-gradient-to-b from-white/55 to-transparent"
           />
-        </motion.a>
+        </a>
       ) : null}
 
       {children}
       <style>{`
+        @keyframes path-drawing-in {
+          from { opacity: 0; transform: var(--path-drawing-from, none); }
+        }
+        [data-path-drawing-hero] .path-drawing-in {
+          animation: path-drawing-in var(--path-drawing-duration, 0.7s)
+            cubic-bezier(0.22, 1, 0.36, 1) var(--path-drawing-delay, 0s) both;
+        }
         @keyframes path-drawing-scroll-cue {
           0%, 100% { transform: scaleY(1); opacity: 0.55; }
           50% { transform: scaleY(0.55); opacity: 0.2; }
@@ -562,6 +597,9 @@ export default function PathDrawingPortfolioHero({
           animation: path-drawing-scroll-cue 1.8s ease-in-out infinite;
         }
         @media (prefers-reduced-motion: reduce) {
+          [data-path-drawing-hero] .path-drawing-in {
+            animation: none;
+          }
           [data-path-drawing-hero] .path-drawing-scroll-cue {
             animation: none;
             opacity: 0.45;
