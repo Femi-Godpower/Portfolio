@@ -4,9 +4,9 @@ name: Build & Deploy
 # The Plesk host can't build Next.js itself (glibc too old, CloudLinux limits).
 #
 # Repository secrets:
-#   ENV_FILE         full contents of the production .env (deployed with the bundle)
-#   SSH_PRIVATE_KEY  private key whose public half is in the server's authorized_keys
-#   SSH_HOST, SSH_PORT, SSH_USER
+#   ENV_FILE      full contents of the production .env (used for the build only;
+#                 the server keeps its own .env, which rsync never touches)
+#   SSH_HOST, SSH_PORT, SSH_USER, SSH_PASSWORD
 
 on:
   push:
@@ -81,33 +81,40 @@ jobs:
           mkdir -p deployment/.next
           cp -a .next/static deployment/.next/static
 
+          # Next copies .env into the standalone output; the server keeps its own.
+          rm -f deployment/.env*
+
           # Plesk's nodenv picks the Node version from this file.
           cp .node-version deployment/
-          cp .env deployment/.env
 
           # Plesk's startup file is app.js.
           printf '%s\n' \
             '// Plesk startup file: runs the standalone Next.js server built by GitHub Actions.' \
             'require("./server.js");' > deployment/app.js
 
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
       - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
+          chmod 600 ~/.ssh/known_hosts
+
       # --delete keeps httpdocs identical to the bundle, except for files the
-      # server itself owns: Passenger's tmp/, the SSL challenge dir and the log.
+      # server itself owns: .env, Passenger's tmp/, the SSL challenge dir and the log.
       - name: Deploy to Plesk
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          rsync -az --delete \
+          sshpass -e rsync -az --delete \
+            --exclude=".env" \
             --exclude="tmp/" \
             --exclude=".well-known/" \
             --exclude="stderr.log" \
@@ -116,8 +123,10 @@ jobs:
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${DEPLOY_PATH}/"
 
       - name: Restart application
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          ssh \
+          sshpass -e ssh \
             -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "mkdir -p '${DEPLOY_PATH}/tmp' && touch '${DEPLOY_PATH}/tmp/restart.txt'"
