@@ -221,75 +221,8 @@ const MOCK_FORM: OminityForm = {
   },
 };
 
-const createHeroComponent = (locale: string) => ({
-  id: `hero-${locale}`,
-  key: "hero",
-  type: "hero",
-  fields: {
-    title: locale === "nl" ? "Bouw met Ominity" : "Build with Ominity",
-    subtitle:
-      locale === "nl"
-        ? "Een productieklare starter met App Router, ISR en component-registratie."
-        : "A production-ready starter with App Router, ISR, and component registry.",
-    call_to_action: {
-      id: `cta-${locale}`,
-      key: "button_link",
-      type: "button_link",
-      fields: {
-        label: locale === "nl" ? "Contacteer ons" : "Contact us",
-        target: {
-          resource: "route",
-          name: "page",
-          locale,
-          parameters: {
-            slug: locale === "nl" ? "contacteer-ons" : "contact",
-          },
-        },
-      },
-      children: [],
-    },
-  },
-  children: [
-    {
-      id: `hero-child-${locale}`,
-      key: "rich_text",
-      type: "rich_text",
-      fields: {
-        html:
-          locale === "nl"
-            ? "<p>Server Components renderen de pagina. Alleen interactieve blokken worden client-side gehydrateerd.</p>"
-            : "<p>Server Components render the page. Only interactive blocks hydrate on the client.</p>",
-      },
-      children: [],
-    },
-  ],
-});
-
-const createSliderComponent = (locale: string) => ({
-  id: `slider-${locale}`,
-  key: "slider",
-  type: "slider",
-  fields: {
-    title: locale === "nl" ? "Waarom deze starter" : "Why this starter",
-    items:
-      locale === "nl"
-        ? [
-          "Sterk getypeerde CMS-modellen",
-          "Generieke rendering engine",
-          "Flexibele routing per project",
-          "Vormmodule met shadcn-koppeling",
-        ]
-        : [
-          "Strongly typed CMS models",
-          "Generic rendering engine",
-          "Flexible routing per project",
-          "Forms module with shadcn integration",
-        ],
-  },
-  children: [],
-});
-
-// Portfolio fixtures. Every [TEMP] string is placeholder copy, mirrored in Ominity.
+// Portfolio fixtures for local development only (OMINITY_USE_MOCK_DATA=true).
+// Sample copy, never shown on the live site: real content lives in Ominity.
 const MOCK_CASE_IMAGES = [
   "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80",
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80",
@@ -310,7 +243,7 @@ const createPortfolioComponents = (locale: string) => {
         eyebrow: "Portfolio",
         greeting: nl ? "Hey, ik ben" : "Hey I'm",
         name: "FEMI",
-        tagline: nl ? "[TEMP] Student Bedrijfsmanagement — Brussel" : "[TEMP] Business Management student — Brussels",
+        tagline: nl ? "Student Bedrijfsmanagement — Brussel" : "Business Management student — Brussels",
         scroll_label: "Scroll",
         color_from: "#f093fb",
         color_to: "#f5576c",
@@ -325,15 +258,15 @@ const createPortfolioComponents = (locale: string) => {
         anchor: "works",
         cases: MOCK_CASE_IMAGES.map((image, index) => ({
           image,
-          image_alt: nl ? `[TEMP] Voorbeeld project ${numbers[index]}` : `[TEMP] Project ${numbers[index]} preview`,
-          title: `[TEMP] Project ${numbers[index]}`,
-          client: nl ? "[TEMP] Naam klant" : "[TEMP] Client name",
+          image_alt: nl ? `Voorbeeld project ${numbers[index]}` : `Project ${numbers[index]} preview`,
+          title: `Project ${numbers[index]}`,
+          client: nl ? "Naam klant" : "Client name",
           problem: nl
-            ? "[TEMP] Probleem: waar de klant mee worstelde voor het project begon."
-            : "[TEMP] Problem: what the client was struggling with before the project started.",
+            ? "Probleem: waar de klant mee worstelde voor het project begon."
+            : "Problem: what the client was struggling with before the project started.",
           outcome: nl
-            ? "[TEMP] Resultaat: wat er veranderde na het project, liefst met een cijfer."
-            : "[TEMP] Outcome: what changed after the project, ideally with a number.",
+            ? "Resultaat: wat er veranderde na het project, liefst met een cijfer."
+            : "Outcome: what changed after the project, ideally with a number.",
         })),
       },
       children: [],
@@ -379,27 +312,27 @@ const createPortfolioComponents = (locale: string) => {
       fields: {
         anchor: "about",
         eyebrow: nl ? "Over mij" : "About me",
-        heading: nl ? "[TEMP] Een loopbaan zonder grenzen." : "[TEMP] A career without boundaries.",
+        heading: nl ? "Een loopbaan zonder grenzen." : "A career without boundaries.",
         body: nl
           ? [
-            "[TEMP] Eerste alinea: wie je bent en wat je doet.",
-            "[TEMP] Tweede alinea: wat je werk je geleerd heeft.",
-            "[TEMP] Derde alinea: wat je bedrijven aanbiedt.",
-            "[TEMP] Vierde alinea: wat je buiten je werk drijft.",
+            "Eerste alinea: wie je bent en wat je doet.",
+            "Tweede alinea: wat je werk je geleerd heeft.",
+            "Derde alinea: wat je bedrijven aanbiedt.",
+            "Vierde alinea: wat je buiten je werk drijft.",
           ]
           : [
-            "[TEMP] First paragraph: who you are and what you do.",
-            "[TEMP] Second paragraph: what your work has taught you.",
-            "[TEMP] Third paragraph: what you offer companies.",
-            "[TEMP] Fourth paragraph: what drives you outside of work.",
+            "First paragraph: who you are and what you do.",
+            "Second paragraph: what your work has taught you.",
+            "Third paragraph: what you offer companies.",
+            "Fourth paragraph: what drives you outside of work.",
           ],
-        name: "[TEMP] Femi Godpower",
-        phone: "[TEMP] +32 000 00 00 00",
-        email: "[TEMP] hello@example.com",
-        location: nl ? "[TEMP] Brussel, België" : "[TEMP] Brussels, Belgium",
+        name: "Femi Godpower",
+        phone: "+32 000 00 00 00",
+        email: "hello@example.com",
+        location: nl ? "Brussel, België" : "Brussels, Belgium",
         availability: nl
-          ? "[TEMP] Beschikbaar voor geselecteerde freelance opdrachten."
-          : "[TEMP] Available for selected freelance assignments.",
+          ? "Beschikbaar voor geselecteerde freelance opdrachten."
+          : "Available for selected freelance assignments.",
       },
       children: [],
     },
@@ -410,22 +343,22 @@ const createPortfolioComponents = (locale: string) => {
       fields: {
         big_text: "FEMI",
         links: [
-          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Projecten" : "[TEMP] Projects", url: "#works" },
-          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Aanpak" : "[TEMP] Approach", url: "#approach" },
-          { column: nl ? "[TEMP] Navigatie" : "[TEMP] Navigate", label: nl ? "[TEMP] Terug naar boven" : "[TEMP] Back to top", url: "#top" },
-          { column: nl ? "[TEMP] Meer" : "[TEMP] More", label: nl ? "[TEMP] Link een" : "[TEMP] Link one", url: "#" },
-          { column: nl ? "[TEMP] Meer" : "[TEMP] More", label: nl ? "[TEMP] Link twee" : "[TEMP] Link two", url: "#" },
+          { column: nl ? "Navigatie" : "Navigate", label: nl ? "Projecten" : "Projects", url: "#works" },
+          { column: nl ? "Navigatie" : "Navigate", label: nl ? "Aanpak" : "Approach", url: "#approach" },
+          { column: nl ? "Navigatie" : "Navigate", label: nl ? "Terug naar boven" : "Back to top", url: "#top" },
+          { column: nl ? "Meer" : "More", label: nl ? "Link een" : "Link one", url: "#" },
+          { column: nl ? "Meer" : "More", label: nl ? "Link twee" : "Link two", url: "#" },
         ],
-        contact_title: "[TEMP] Contact",
-        email: "[TEMP] hello@example.com",
-        phone: "[TEMP] +32 000 00 00 00",
-        location: nl ? "[TEMP] Brussel, België" : "[TEMP] Brussels, Belgium",
+        contact_title: "Contact",
+        email: "hello@example.com",
+        phone: "+32 000 00 00 00",
+        location: nl ? "Brussel, België" : "Brussels, Belgium",
         socials: [
           { platform: "linkedin", url: "#" },
           { platform: "instagram", url: "#" },
           { platform: "x", url: "#" },
         ],
-        copyright: nl ? "[TEMP] Femi Godpower. Alle rechten voorbehouden." : "[TEMP] Femi Godpower. All rights reserved.",
+        copyright: nl ? "Femi Godpower. Alle rechten voorbehouden." : "Femi Godpower. All rights reserved.",
       },
       children: [],
     },
@@ -523,7 +456,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     title: "Contact",
     description: "Contact the Ominity team.",
     status: "published",
-    components: [createHeroComponent("en"), createSliderComponent("en"), createFormComponent("en")],
+    components: [createFormComponent("en")],
     translations: [
       { locale: "en", path: CONTACT_TRANSLATIONS.en, slug: "contact", canonical: true },
       { locale: "nl", path: CONTACT_TRANSLATIONS.nl, slug: "contacteer-ons" },
@@ -546,7 +479,7 @@ const MOCK_PAGES: ReadonlyArray<CmsPage> = [
     title: "Contact",
     description: "Neem contact op met het Ominity-team.",
     status: "published",
-    components: [createHeroComponent("nl"), createSliderComponent("nl"), createFormComponent("nl")],
+    components: [createFormComponent("nl")],
     translations: [
       { locale: "en", path: CONTACT_TRANSLATIONS.en, slug: "contact" },
       {

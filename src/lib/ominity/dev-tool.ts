@@ -39,14 +39,6 @@ export const createStarterDevToolSnapshot = (
     );
   }
 
-  if (config.enableAuth) {
-    requiredEnvironment.push(
-      { name: "OMINITY_AUTH_CLIENT_ID", value: config.authClientId, message: "Required when authentication is enabled." },
-      { name: "OMINITY_AUTH_CLIENT_SECRET", value: config.authClientSecret, message: "Required when authentication is enabled." },
-      { name: "OMINITY_AUTH_SESSION_SECRET", value: config.authSessionSecret, message: "Required to sign local auth sessions." },
-    );
-  }
-
   const missingEnvironment = requiredEnvironment
     .filter((item) => !isConfigured(item.value))
     .map((item) => item.name);
@@ -63,13 +55,6 @@ export const createStarterDevToolSnapshot = (
   }
   if (config.nodeEnv === "production" && config.apiUrl?.startsWith("http://")) {
     warnings.push("The production Ominity API URL does not use HTTPS.");
-  }
-  if (
-    config.enableAuth
-    && isConfigured(config.authSessionSecret)
-    && (config.authSessionSecret!.length < 32 || config.authSessionSecret!.startsWith("change-me"))
-  ) {
-    warnings.push("The auth session secret is a placeholder or shorter than 32 characters.");
   }
 
   const healthChecks: OminityDevToolHealthCheck[] = [
@@ -100,15 +85,8 @@ export const createStarterDevToolSnapshot = (
     })),
   ];
   const flags: OminityDevToolFlag[] = [
-    { label: "Commerce", value: config.enableCommerce, status: config.enableCommerce ? "enabled" : "disabled" },
-    { label: "Products", value: config.enableCommerceProducts, status: config.enableCommerceProducts ? "enabled" : "disabled" },
-    { label: "Categories", value: config.enableCommerceCategories, status: config.enableCommerceCategories ? "enabled" : "disabled" },
-    { label: "Cart", value: config.enableCommerceCart, status: config.enableCommerceCart ? "enabled" : "disabled" },
-    { label: "Wishlist", value: config.enableCommerceWishlist, status: config.enableCommerceWishlist ? "enabled" : "disabled" },
-    { label: "Checkout", value: config.enableCommerceCheckout, status: config.enableCommerceCheckout ? "enabled" : "disabled" },
-    { label: "Payment", value: config.enableCommercePayment, status: config.enableCommercePayment ? "enabled" : "disabled" },
-    { label: "Auth", value: config.enableAuth, status: config.enableAuth ? "enabled" : "disabled" },
-    { label: "Customer accounts", value: config.enableCustomerAccounts, status: config.enableCustomerAccounts ? "enabled" : "disabled" },
+    { label: "Mock data", value: config.useMockData, status: config.useMockData ? "enabled" : "disabled" },
+    { label: "Strict components", value: config.strictMissingComponents, status: config.strictMissingComponents ? "enabled" : "disabled" },
   ];
   const displayedApiUrl = config.apiUrl
     ?? (config.useMockData ? "Not used in mock mode" : undefined);
@@ -150,7 +128,6 @@ export const createStarterDevToolSnapshot = (
       checks: healthChecks,
       details: {
         strictMissingComponents: config.strictMissingComponents,
-        checkoutAllowGuest: config.checkoutAllowGuest,
         formsValidateFormId: config.formsValidateFormId,
       },
     },

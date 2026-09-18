@@ -9,7 +9,7 @@ import PortfolioFooter, {
 
 import { asRecordArray, asString } from "./helpers";
 
-const PLATFORMS: ReadonlyArray<SocialPlatform> = ["linkedin", "instagram", "x", "facebook", "website"];
+const PLATFORMS: ReadonlyArray<SocialPlatform> = ["linkedin", "instagram", "x", "facebook", "ominity", "website"];
 
 const asPlatform = (value: unknown): SocialPlatform =>
   PLATFORMS.find((platform) => platform === asString(value)) ?? "website";
@@ -39,7 +39,9 @@ export function SiteFooterBlock({
     email: asString(component.fields.email).trim(),
     phone: asString(component.fields.phone).trim(),
     location: asString(component.fields.location).trim(),
+    // "Show on site" off hides an entry; entries saved before the switch existed stay visible.
     socials: asRecordArray(component.fields.socials)
+      .filter((entry) => entry.visible !== false && entry.visible !== "false" && entry.visible !== 0)
       .map((entry) => ({ platform: asPlatform(entry.platform), href: asString(entry.url).trim() }))
       .filter((social) => social.href.length > 0),
     copyright: asString(component.fields.copyright).trim(),

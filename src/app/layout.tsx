@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     default: "Femi Godpower",
     template: "%s | Femi Godpower",
   },
-  // TEMP: fallback only — the real description comes from the page SEO fields in Ominity.
+  // Fallback only: the real description comes from the page SEO fields in Ominity.
   description: "Portfolio of Femi Godpower.",
 };
 
@@ -33,13 +33,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Providers
           devToolEnabled={config.devTool}
           devToolSnapshot={devToolSnapshot}
-          customerAccountsEnabled={config.enableCustomerAccounts}
         >
           <div className="page-gradient relative flex min-h-screen flex-col">
             <SiteHeader />
             {/* Full-bleed: portfolio sections manage their own width. */}
             <main className="flex-1">{children}</main>
-            {/* Footer comes later as its own CMS block (see Website.md). */}
             <OminityDevTool enabled={config.devTool} endpoint="/api/dev-tool/requests" />
           </div>
         </Providers>

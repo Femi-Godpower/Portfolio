@@ -6,7 +6,7 @@ import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { TextHoverEffect } from "@/components/ui/hover-footer";
 import { isFooterSnapLocked } from "@/lib/scroll-snap-lock";
 
-export type SocialPlatform = "linkedin" | "instagram" | "x" | "facebook" | "website";
+export type SocialPlatform = "linkedin" | "instagram" | "x" | "facebook" | "ominity" | "website";
 
 export interface FooterLinkColumn {
   title: string;
@@ -70,6 +70,20 @@ function SocialIcon({ platform }: { platform: SocialPlatform }) {
           <path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.9c0-.9.3-1.6 1.6-1.6h1.6V3.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.4H8.6V13h2.7v8" />
         </svg>
       );
+    case "ominity":
+      // The real (multicolour) logo, turned dim white like the other marks
+      // and shown in colour on hover.
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/ominity-logo.svg"
+          alt=""
+          aria-hidden
+          width={20}
+          height={20}
+          className="h-5 w-5 object-contain opacity-50 brightness-0 invert transition group-hover:opacity-100 group-hover:filter-none"
+        />
+      );
     default:
       return <Globe size={20} aria-hidden />;
   }
@@ -80,12 +94,13 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
   instagram: "Instagram",
   x: "X",
   facebook: "Facebook",
+  ominity: "Ominity",
   website: "Website",
 };
 
 /** Links, contact and socials, with the big name right under the divider. */
 function FooterContent({ data }: { data: PortfolioFooterData }) {
-  const emailHref = data.email.includes("@") ? `mailto:${data.email.replace(/^\[TEMP\]\s*/, "")}` : undefined;
+  const emailHref = data.email.includes("@") ? `mailto:${data.email}` : undefined;
   const phoneDigits = data.phone.replace(/[^+\d]/g, "");
   const phoneHref = phoneDigits ? `tel:${phoneDigits}` : undefined;
   const hasContact = Boolean(data.email || data.phone || data.location);
@@ -155,7 +170,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
                   key={`${social.platform}-${index}`}
                   href={social.href}
                   aria-label={SOCIAL_LABELS[social.platform]}
-                  className="transition-colors hover:text-[#f093fb]"
+                  className="group transition-colors hover:text-[#f093fb]"
                   target={social.href.startsWith("http") ? "_blank" : undefined}
                   rel={social.href.startsWith("http") ? "noreferrer" : undefined}
                 >

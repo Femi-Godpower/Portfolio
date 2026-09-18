@@ -6,13 +6,6 @@ import type {
 import type { HomeLocaleRedirectMode as StarterHomeLocaleRedirectMode } from "@ominity/next/next";
 
 const DEFAULT_REVALIDATE_SECONDS = 300;
-const DEFAULT_COMMERCE_LIST_LIMIT = 250;
-const DEFAULT_AUTH_COOKIE_NAME = "ominity_auth_session";
-const DEFAULT_AUTH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
-const DEFAULT_ACTIVE_CUSTOMER_COOKIE_NAME = "ominity_active_customer";
-const DEFAULT_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-const DEFAULT_CART_COOKIE_NAME = "ominity_cart_id";
-const DEFAULT_CART_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const toBoolean = (value: string | undefined, fallback: boolean): boolean => {
   if (typeof value !== "string") {
@@ -116,27 +109,6 @@ export interface StarterOminityConfig {
   readonly revalidateSeconds: number;
   readonly draftToken?: string;
   readonly formsValidateFormId: boolean;
-  readonly enableCommerce: boolean;
-  readonly enableCommerceProducts: boolean;
-  readonly enableCommerceCategories: boolean;
-  readonly enableCommerceCart: boolean;
-  readonly enableCommerceWishlist: boolean;
-  readonly enableCommerceCheckout: boolean;
-  readonly enableCommercePayment: boolean;
-  readonly enableAuth: boolean;
-  readonly enableCustomerAccounts: boolean;
-  readonly checkoutAllowGuest: boolean;
-  readonly commerceListLimit: number;
-  readonly authClientId?: string;
-  readonly authClientSecret?: string;
-  readonly authScope?: string;
-  readonly authSessionSecret?: string;
-  readonly authCookieName: string;
-  readonly authCookieMaxAgeSeconds: number;
-  readonly activeCustomerCookieName: string;
-  readonly activeCustomerCookieMaxAgeSeconds: number;
-  readonly cartCookieName: string;
-  readonly cartCookieMaxAgeSeconds: number;
 }
 
 let cachedConfig: StarterOminityConfig | null = null;
@@ -145,24 +117,6 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
   if (cachedConfig) {
     return cachedConfig;
   }
-
-  const enableCommerce = toBoolean(process.env.OMINITY_FEATURE_COMMERCE, true);
-  const enableCommerceProducts = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_COMMERCE_PRODUCTS, true);
-  const enableCommerceCategories = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_COMMERCE_CATEGORIES, true);
-  const enableCommerceCart = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_CART, true);
-  const enableCommerceWishlist = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_WISHLIST, true);
-  const enableCommerceCheckout = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_CHECKOUT, true);
-  const enableCommercePayment = enableCommerce
-    && toBoolean(process.env.OMINITY_FEATURE_PAYMENT, true);
-  const enableAuth = toBoolean(process.env.OMINITY_FEATURE_AUTH, true);
-  const enableCustomerAccounts = enableAuth
-    && toBoolean(process.env.OMINITY_FEATURE_CUSTOMER_ACCOUNTS, true);
-  const checkoutAllowGuest = toBoolean(process.env.OMINITY_CHECKOUT_ALLOW_GUEST, true);
 
   cachedConfig = {
     nodeEnv: process.env.NODE_ENV ?? "development",
@@ -196,48 +150,6 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
       ? { draftToken: process.env.OMINITY_DRAFT_TOKEN }
       : {}),
     formsValidateFormId: toBoolean(process.env.OMINITY_FORMS_VALIDATE_FORM_ID, true),
-    enableCommerce,
-    enableCommerceProducts,
-    enableCommerceCategories,
-    enableCommerceCart,
-    enableCommerceWishlist,
-    enableCommerceCheckout,
-    enableCommercePayment,
-    enableAuth,
-    enableCustomerAccounts,
-    checkoutAllowGuest,
-    commerceListLimit: toNumber(
-      process.env.OMINITY_COMMERCE_LIST_LIMIT,
-      DEFAULT_COMMERCE_LIST_LIMIT,
-    ),
-    ...(toNonEmptyString(process.env.OMINITY_AUTH_CLIENT_ID)
-      ? { authClientId: toNonEmptyString(process.env.OMINITY_AUTH_CLIENT_ID)! }
-      : {}),
-    ...(toNonEmptyString(process.env.OMINITY_AUTH_CLIENT_SECRET)
-      ? { authClientSecret: toNonEmptyString(process.env.OMINITY_AUTH_CLIENT_SECRET)! }
-      : {}),
-    ...(toNonEmptyString(process.env.OMINITY_AUTH_SCOPE)
-      ? { authScope: toNonEmptyString(process.env.OMINITY_AUTH_SCOPE)! }
-      : {}),
-    ...(toNonEmptyString(process.env.OMINITY_AUTH_SESSION_SECRET)
-      ? { authSessionSecret: toNonEmptyString(process.env.OMINITY_AUTH_SESSION_SECRET)! }
-      : {}),
-    authCookieName: toNonEmptyString(process.env.OMINITY_AUTH_COOKIE_NAME) ?? DEFAULT_AUTH_COOKIE_NAME,
-    authCookieMaxAgeSeconds: toNumber(
-      process.env.OMINITY_AUTH_COOKIE_MAX_AGE_SECONDS,
-      DEFAULT_AUTH_COOKIE_MAX_AGE_SECONDS,
-    ),
-    activeCustomerCookieName: toNonEmptyString(process.env.OMINITY_ACTIVE_CUSTOMER_COOKIE_NAME)
-      ?? DEFAULT_ACTIVE_CUSTOMER_COOKIE_NAME,
-    activeCustomerCookieMaxAgeSeconds: toNumber(
-      process.env.OMINITY_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS,
-      DEFAULT_ACTIVE_CUSTOMER_COOKIE_MAX_AGE_SECONDS,
-    ),
-    cartCookieName: toNonEmptyString(process.env.OMINITY_CART_COOKIE_NAME) ?? DEFAULT_CART_COOKIE_NAME,
-    cartCookieMaxAgeSeconds: toNumber(
-      process.env.OMINITY_CART_COOKIE_MAX_AGE_SECONDS,
-      DEFAULT_CART_COOKIE_MAX_AGE_SECONDS,
-    ),
   };
 
   return cachedConfig;

@@ -1,22 +1,12 @@
 {
   "brandName": "Femi",
   "nav": {
-    "contact": "Contact",
-    "product": "Product",
-    "category": "Category",
-    "cart": "Cart",
-    "wishlist": "Wishlist",
-    "account": "Account",
     "home": "Home",
     "cases": "Cases",
     "about": "About me",
     "approach": "Approach",
     "menu": "Open menu",
     "close": "Close menu"
-  },
-  "switcher": {
-    "languageLabel": "Language",
-    "countryLabel": "Country"
   },
   "forms": {
     "validation": {
