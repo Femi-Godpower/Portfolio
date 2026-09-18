@@ -12,6 +12,11 @@ const UI_DICTIONARIES: Readonly<Record<string, StarterUiDictionary>> = {
 
 const FALLBACK_UI_DICTIONARY = en;
 
+/** Every language with UI copy, keyed by language code. */
+export function listUiDictionaries(): Readonly<Record<string, StarterUiDictionary>> {
+  return UI_DICTIONARIES;
+}
+
 export function resolveUiDictionary(locale: string): StarterUiDictionary {
   const normalizedLocale = normalizeLocaleCode(locale);
   const language = parseLocaleCode(normalizedLocale).language;

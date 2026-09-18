@@ -36,5 +36,11 @@
       "problem": "Problem",
       "outcome": "Outcome"
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "Looks like you went off-piste. This page doesn't exist (anymore).",
+    "home": "Back home",
+    "projects": "See my projects"
   }
 }

@@ -36,5 +36,11 @@
       "problem": "Probleem",
       "outcome": "Resultaat"
     }
+  },
+  "notFound": {
+    "title": "Pagina niet gevonden",
+    "description": "Je bent off-piste gegaan. Deze pagina bestaat niet (meer).",
+    "home": "Naar home",
+    "projects": "Bekijk mijn projecten"
   }
 }
