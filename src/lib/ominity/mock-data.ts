@@ -373,6 +373,37 @@ const createPortfolioComponents = (locale: string) => {
       children: [],
     },
     {
+      id: `about-me-${locale}`,
+      key: "about-me",
+      type: "about-me",
+      fields: {
+        anchor: "about",
+        eyebrow: nl ? "Over mij" : "About me",
+        heading: nl ? "[TEMP] Een loopbaan zonder grenzen." : "[TEMP] A career without boundaries.",
+        body: nl
+          ? [
+            "[TEMP] Eerste alinea: wie je bent en wat je doet.",
+            "[TEMP] Tweede alinea: wat je werk je geleerd heeft.",
+            "[TEMP] Derde alinea: wat je bedrijven aanbiedt.",
+            "[TEMP] Vierde alinea: wat je buiten je werk drijft.",
+          ]
+          : [
+            "[TEMP] First paragraph: who you are and what you do.",
+            "[TEMP] Second paragraph: what your work has taught you.",
+            "[TEMP] Third paragraph: what you offer companies.",
+            "[TEMP] Fourth paragraph: what drives you outside of work.",
+          ],
+        name: "[TEMP] Femi Godpower",
+        phone: "[TEMP] +32 000 00 00 00",
+        email: "[TEMP] hello@example.com",
+        location: nl ? "[TEMP] Brussel, België" : "[TEMP] Brussels, Belgium",
+        availability: nl
+          ? "[TEMP] Beschikbaar voor geselecteerde freelance opdrachten."
+          : "[TEMP] Available for selected freelance assignments.",
+      },
+      children: [],
+    },
+    {
       id: `site-footer-${locale}`,
       key: "site-footer",
       type: "site-footer",

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 
+import { useLineReveal } from "@/components/ui/use-line-reveal";
+
 export interface ApproachStep {
   title: string;
   description?: string;
@@ -14,80 +16,27 @@ export interface ApproachSectionProps {
   steps: ApproachStep[];
 }
 
-/** Delay between letters of the heading, in ms. */
-const LETTER_STAGGER = 22;
-
 const STYLES = `
-  @keyframes approach-letter-in {
-    0% { opacity: 0; transform: translate3d(0, 0.55em, 0); filter: blur(8px); }
-    100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
-  }
   @keyframes approach-card-in {
     0% { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.97); filter: blur(12px); }
     60% { filter: blur(0); }
     100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
   }
-  .approach-letter,
-  .approach-fade,
   .approach-card {
     opacity: 0;
-  }
-  [data-visible="true"] .approach-letter {
-    animation: approach-letter-in 600ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
-    animation-delay: var(--approach-delay, 0ms);
-  }
-  [data-visible="true"] .approach-fade {
-    animation: approach-letter-in 700ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
-    animation-delay: var(--approach-delay, 0ms);
   }
   [data-visible="true"] .approach-card {
     animation: approach-card-in 760ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
     animation-delay: var(--approach-delay, 0ms);
   }
   @media (prefers-reduced-motion: reduce) {
-    .approach-letter,
-    .approach-fade,
     .approach-card,
-    [data-visible="true"] .approach-letter,
-    [data-visible="true"] .approach-fade,
     [data-visible="true"] .approach-card {
       animation: none;
       opacity: 1;
     }
   }
 `;
-
-/** Heading whose letters rise in one after another; words never break mid-letter. */
-function LetterHeading({ text }: { text: string }) {
-  let letterIndex = 0;
-  const words = text.split(" ");
-
-  return (
-    <h2
-      aria-label={text}
-      className="max-w-4xl text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
-    >
-      {words.map((word, wordIndex) => (
-        <span key={wordIndex} aria-hidden className="inline-block whitespace-nowrap">
-          {Array.from(word).map((char) => {
-            const delay = letterIndex * LETTER_STAGGER;
-            letterIndex += 1;
-            return (
-              <span
-                key={`${char}-${delay}`}
-                className="approach-letter inline-block"
-                style={{ "--approach-delay": `${delay}ms` } as CSSProperties}
-              >
-                {char}
-              </span>
-            );
-          })}
-          {wordIndex < words.length - 1 ? " " : null}
-        </span>
-      ))}
-    </h2>
-  );
-}
 
 function StepCard({ step, index }: { step: ApproachStep; index: number }) {
   const cardRef = useRef<HTMLElement>(null);
@@ -137,12 +86,15 @@ function StepCard({ step, index }: { step: ApproachStep; index: number }) {
 }
 
 /**
- * Approach section: eyebrow, letter-animated heading, intro and numbered step
- * cards. Transparent, so the page-wide gradient shows through.
+ * Approach section: eyebrow, heading, intro and numbered step cards. Heading and
+ * intro reveal line by line on scroll, like the About section and the case
+ * studies; the cards keep their own fade. Transparent, so the page-wide
+ * gradient shows through.
  */
 export default function ApproachSection({ eyebrow, heading, intro, steps }: ApproachSectionProps) {
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  useLineReveal(sectionRef, [heading, intro]);
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -160,8 +112,6 @@ export default function ApproachSection({ eyebrow, heading, intro, steps }: Appr
     return () => observer.disconnect();
   }, []);
 
-  const headingDuration = Array.from(heading.replace(/\s/g, "")).length * LETTER_STAGGER;
-
   return (
     <section
       ref={sectionRef}
@@ -172,16 +122,20 @@ export default function ApproachSection({ eyebrow, heading, intro, steps }: Appr
 
       <header className="flex flex-col gap-6">
         {eyebrow ? (
-          <div className="approach-fade inline-flex items-center gap-3 text-xs uppercase tracking-[0.4em] text-white/80">
-            <span className="h-1 w-14 rounded-full bg-gradient-to-r from-[#f093fb] to-[#f5576c]" />
+          <div className="inline-flex w-fit items-center text-xs uppercase tracking-[0.4em] text-white/80">
             {eyebrow}
           </div>
         ) : null}
-        <LetterHeading text={heading} />
+        <h2
+          data-line-reveal
+          className="max-w-4xl text-4xl font-semibold leading-[1.05] tracking-tight text-white opacity-0 sm:text-5xl md:text-6xl lg:text-7xl"
+        >
+          {heading}
+        </h2>
         {intro ? (
           <p
-            className="approach-fade max-w-2xl text-base leading-relaxed text-white/60 md:text-lg"
-            style={{ "--approach-delay": `${Math.min(headingDuration, 900)}ms` } as CSSProperties}
+            data-line-reveal
+            className="max-w-2xl text-base leading-relaxed text-white/60 opacity-0 md:text-lg"
           >
             {intro}
           </p>

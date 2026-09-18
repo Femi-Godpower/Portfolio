@@ -15,10 +15,10 @@ import {
   Compass,
   Heart,
   House,
-  Mail,
   Menu,
   PackageSearch,
   UserCircle2,
+  UserRound,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -498,21 +498,29 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     navigateToLocale(nextLocale, nextCountryCode);
   };
 
-  // Portfolio sections plus one item per channel language, fanned out around the menu button.
+  // Languages first (English, then Dutch; the current one is hidden), then the
+  // portfolio sections in page order, fanned out top-left to bottom-right.
+  const LANGUAGE_ORDER = ["en", "nl"];
+  const languageRank = (language: string) => {
+    const rank = LANGUAGE_ORDER.indexOf(language);
+    return rank === -1 ? LANGUAGE_ORDER.length : rank;
+  };
   const menuItems: CircleMenuItem[] = [
-    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: "#top" },
-    { id: "projects", label: dictionary.nav.projects, icon: <Briefcase size={16} />, href: "#works" },
-    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: "#approach" },
-    { id: "contact", label: dictionary.nav.contact, icon: <Mail size={16} />, href: "#contact" },
     ...(showLocaleSwitcher
-      ? languageOptions.map((entry) => ({
-        id: `language-${entry.language}`,
-        label: entry.label,
-        icon: <span className="text-xs font-semibold">{entry.language.toUpperCase()}</span>,
-        active: entry.language === activeLanguage,
-        value: entry.language,
-      }))
+      ? languageOptions
+        .filter((entry) => entry.language !== activeLanguage)
+        .sort((left, right) => languageRank(left.language) - languageRank(right.language))
+        .map((entry) => ({
+          id: `language-${entry.language}`,
+          label: entry.label,
+          icon: <span className="text-xs font-semibold">{entry.language.toUpperCase()}</span>,
+          value: entry.language,
+        }))
       : []),
+    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: "#top" },
+    { id: "cases", label: dictionary.nav.cases, icon: <Briefcase size={16} />, href: "#works" },
+    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: "#approach" },
+    { id: "about", label: dictionary.nav.about, icon: <UserRound size={16} />, href: "#about" },
   ];
 
   return (

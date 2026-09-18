@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 
+import { lockFooterSnap } from "@/lib/scroll-snap-lock";
 import { cn } from "@/lib/utils";
 
 const CONSTANTS = {
@@ -16,9 +17,10 @@ const CONSTANTS = {
 
 // The menu lives in the top-right corner, so the items fan out over a quarter
 // circle from straight down (90°) to straight left (180°) instead of a full
-// circle, which would put half of them off-screen.
-const ARC_START = Math.PI / 2;
-const ARC_END = Math.PI;
+// circle, which would put half of them off-screen. The first item sits at the
+// left end and the last straight below, so the list reads top-left to bottom-right.
+const ARC_START = Math.PI;
+const ARC_END = Math.PI / 2;
 
 const pointOnArc = (index: number, total: number, radius: number) => {
   const theta = total <= 1 ? ARC_START : ARC_START + ((ARC_END - ARC_START) * index) / (total - 1);
@@ -37,10 +39,14 @@ function scrollToAnchor(event: MouseEvent<HTMLAnchorElement>, href: string) {
 
   event.preventDefault();
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  window.scrollTo({
-    top: target.getBoundingClientRect().top + window.scrollY,
-    behavior: reduceMotion ? "auto" : "smooth",
-  });
+  const top = target.getBoundingClientRect().top + window.scrollY;
+
+  // Keep the footer's snap out of this scroll, or it hijacks it and skips the
+  // section. A long glide takes longer, so scale the lock with the distance.
+  const distance = Math.abs(top - window.scrollY);
+  lockFooterSnap(reduceMotion ? 200 : Math.min(600 + distance / 3, 3000));
+
+  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
   window.history.replaceState(null, "", href);
 }
 

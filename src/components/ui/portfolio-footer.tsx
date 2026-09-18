@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
 import { TextHoverEffect } from "@/components/ui/hover-footer";
+import { isFooterSnapLocked } from "@/lib/scroll-snap-lock";
 
 export type SocialPlatform = "linkedin" | "instagram" | "x" | "facebook" | "website";
 
@@ -170,8 +171,9 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
         </div>
       </div>
 
-      {/* Same width as the footer content above, directly under the divider row. */}
-      <div className="relative z-40 mx-auto mt-3 w-full max-w-7xl px-6 sm:mt-4 sm:px-14">
+      {/* Same width as the content above; mt-auto keeps it at the bottom edge
+          instead of leaving empty screen below it. */}
+      <div className="relative z-40 mx-auto mt-auto w-full max-w-7xl px-6 pb-6 sm:px-14 sm:pb-8">
         <TextHoverEffect text={data.bigText} />
       </div>
     </div>
@@ -197,7 +199,7 @@ export default function PortfolioFooter({ data }: { data: PortfolioFooterData })
       const y = window.scrollY;
       const goingDown = y > lastY;
       lastY = y;
-      if (gliding || !goingDown) return;
+      if (gliding || !goingDown || isFooterSnapLocked()) return;
 
       const top = footer.getBoundingClientRect().top;
       const peeked = top < window.innerHeight * 0.85 && top > 4;

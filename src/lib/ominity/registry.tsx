@@ -1,6 +1,7 @@
 import type { CmsRendererOptions } from "@ominity/next/cms/rendering";
 import { createCmsRegistry, defineCmsComponent } from "@ominity/next/cms/rendering";
 
+import { AboutBlock } from "@/components/cms/about-block";
 import { ApproachBlock } from "@/components/cms/approach-block";
 import { ButtonLinkBlock } from "@/components/cms/button-link-block";
 import { CaseRevealBlock } from "@/components/cms/case-reveal-block";
@@ -30,6 +31,7 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("portfolio-hero", PortfolioHeroBlock),
   defineCmsComponent("case-reveal", CaseRevealBlock),
   defineCmsComponent("approach", ApproachBlock),
+  defineCmsComponent("about-me", AboutBlock),
   defineCmsComponent("site-footer", SiteFooterBlock),
 ]);
 

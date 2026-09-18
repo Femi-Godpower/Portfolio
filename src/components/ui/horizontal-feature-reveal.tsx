@@ -163,8 +163,10 @@ export default function HorizontalFeatureReveal({
 
   if (cases.length === 0) return null;
 
-  // Roughly one viewport of vertical scroll per card, like the original 600vh for 4.
-  const sectionHeight = `${Math.max(2, cases.length * 1.5)}00vh`;
+  // Roughly one viewport of vertical scroll per card, like the original 600vh for
+  // 4, plus half a viewport for the run-out space after the last card so the
+  // scroll speed stays the same.
+  const sectionHeight = `${Math.max(200, cases.length * 150 + 50)}vh`;
 
   return (
     <section
@@ -179,7 +181,9 @@ export default function HorizontalFeatureReveal({
       <div className="sticky top-0 h-screen w-full overflow-hidden max-[1025px]:static max-[1025px]:h-fit">
         <div
           ref={trackRef}
-          className="flex w-fit flex-nowrap gap-(--card-gap) pl-[5vw] max-[1025px]:w-full max-[1025px]:flex-col max-[1025px]:gap-[10vw] max-[1025px]:pl-0 max-md:gap-[15vw]"
+          // pr keeps the last card on screen for a moment before the page
+          // carries on scrolling down.
+          className="flex w-fit flex-nowrap gap-(--card-gap) pl-[5vw] pr-[25vw] max-[1025px]:w-full max-[1025px]:flex-col max-[1025px]:gap-[10vw] max-[1025px]:pl-0 max-[1025px]:pr-0 max-md:gap-[15vw]"
           style={{ "--card-gap": `${cardGap}vw` } as CSSProperties}
         >
           {cases.map((item, index) => (
