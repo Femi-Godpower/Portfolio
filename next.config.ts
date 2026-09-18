@@ -188,6 +188,9 @@ function buildLocalizedCommerceRewrites(): RewriteRule[] {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Self-contained server bundle: built by GitHub Actions and pushed to the
+  // `deploy` branch, because the Plesk host is too old/limited to build.
+  output: "standalone",
   transpilePackages: ["@ominity/api-module-forms"],
   async rewrites() {
     return buildLocalizedCommerceRewrites();

@@ -1,0 +1,76 @@
+name: Deploy
+
+# Builds the site on GitHub and force-pushes the finished standalone bundle to
+# the `deploy` branch. Plesk pulls that branch into /httpdocs and only runs it —
+# the Plesk host is too old (glibc) and too resource-limited to build Next.js.
+#
+# Needs one repository secret, ENV_FILE: the full contents of the server .env.
+# Secrets are only used during the build and are never committed; the server
+# keeps its own .env next to app.js.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Write .env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          if [ -z "$ENV_FILE" ]; then
+            echo "::error::Repository secret ENV_FILE is missing (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          printf '%s\n' "$ENV_FILE" > .env
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Assemble bundle
+        run: |
+          mkdir -p bundle/.next
+          cp -r .next/standalone/. bundle/
+          cp -r .next/static bundle/.next/static
+          cp -r public bundle/public
+          cp .node-version bundle/
+          # Next copies .env files into the standalone output — never publish them.
+          find bundle -maxdepth 1 -name '.env*' -delete
+          cat > bundle/app.js <<'EOF'
+          // Plesk startup file: runs the standalone Next.js server built by GitHub Actions.
+          // Configuration comes from the .env file kept on the server next to this file.
+          require("./server.js");
+          EOF
+
+      - name: Push to deploy branch
+        working-directory: bundle
+        run: |
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -f
+          git commit -q -m "Build ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" deploy
