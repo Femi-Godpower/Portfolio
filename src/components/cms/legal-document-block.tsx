@@ -6,7 +6,7 @@ import { asRecordArray, asString } from "./helpers";
 
 /**
  * Plain text from the CMS: a blank line starts a new paragraph, and a run of
- * lines starting with "- " becomes a bullet list.
+ * lines starting with "- " becomes a list (no markers).
  */
 function renderText(text: string): ReactNode[] {
   return text
@@ -18,7 +18,7 @@ function renderText(text: string): ReactNode[] {
       const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
       if (lines.every((line) => line.startsWith("- "))) {
         return (
-          <ul key={index} className="list-disc space-y-2 pl-5 marker:text-[#f093fb]">
+          <ul key={index} className="space-y-2">
             {lines.map((line, lineIndex) => (
               <li key={lineIndex}>{line.slice(2)}</li>
             ))}
@@ -61,7 +61,7 @@ export function LegalDocumentBlock({ component }: CmsComponentRenderProps<Starte
           {sections.map((section, index) => (
             <section key={index} id={`section-${index + 1}`} className="scroll-mt-28">
               <h2 className="mb-4 text-xl font-semibold text-white sm:text-2xl">
-                <span className="mr-3 tabular-nums text-[#f093fb]">{index + 1}.</span>
+                <span className="mr-3 tabular-nums">{index + 1}.</span>
                 {section.heading}
               </h2>
               <div className="space-y-4 leading-relaxed text-white/70">{renderText(section.body)}</div>
