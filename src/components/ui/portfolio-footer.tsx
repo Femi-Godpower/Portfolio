@@ -91,7 +91,10 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
   const hasContact = Boolean(data.email || data.phone || data.location);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden text-white/60">
+    // At least one full screen, so the section above never peeks in once the footer
+    // has snapped into view. justify-end puts any spare height above the links,
+    // keeping FEMI close to the bottom edge.
+    <div className="relative flex min-h-screen w-full flex-col justify-end overflow-hidden text-white/60">
       <div className="relative z-40 mx-auto w-full max-w-7xl px-6 pt-12 sm:px-14 sm:pt-12">
         <div className="grid grid-cols-1 gap-12 pb-8 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-16">
           {data.columns.map((column) => (
@@ -171,9 +174,9 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
         </div>
       </div>
 
-      {/* Same width as the content above; mt-auto keeps it at the bottom edge
-          instead of leaving empty screen below it. */}
-      <div className="relative z-40 mx-auto mt-auto w-full max-w-7xl px-6 pb-6 sm:px-14 sm:pb-8">
+      {/* Same width as the content above. mt-6 matches the divider-to-icons gap
+          (hr my-6); a small bottom padding leaves a little room under the letters. */}
+      <div className="relative z-40 mx-auto mt-6 w-full max-w-7xl px-6 pb-6 sm:px-14 sm:pb-8">
         <TextHoverEffect text={data.bigText} />
       </div>
     </div>

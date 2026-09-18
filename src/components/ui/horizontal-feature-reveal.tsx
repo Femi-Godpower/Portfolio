@@ -85,14 +85,18 @@ export default function HorizontalFeatureReveal({
         if (reduceMotion) return;
 
         q("[data-case-card]").forEach((card, index) => {
+          // Trigger on the text column, not the card: the card's left edge is the
+          // image, so triggering on it played the text animation while the text
+          // was still off-screen.
+          const text = card.querySelector("[data-case-text]") ?? card;
           // The first card is on screen before the horizontal scroll starts,
-          // so it reveals on the vertical approach instead.
+          // so it reveals on the vertical approach instead, once it is mostly in view.
           const reveal: ScrollTrigger.Vars = index === 0
-            ? { trigger: section, start: "top 40%", toggleActions: "play none none reverse" }
+            ? { trigger: section, start: "top 15%", toggleActions: "play none none reverse" }
             : {
-              trigger: card,
+              trigger: text,
               containerAnimation: scroll,
-              start: "left 65%",
+              start: "left 70%",
               toggleActions: "play none none reverse",
             };
 
@@ -163,10 +167,10 @@ export default function HorizontalFeatureReveal({
 
   if (cases.length === 0) return null;
 
-  // Roughly one viewport of vertical scroll per card, like the original 600vh for
-  // 4, plus half a viewport for the run-out space after the last card so the
-  // scroll speed stays the same.
-  const sectionHeight = `${Math.max(200, cases.length * 150 + 50)}vh`;
+  // Vertical scroll distance per card sets the horizontal speed: 225vh per card
+  // (was 150, the original 600vh for 4), so the cards move 1.5x slower. The extra
+  // 75vh covers the run-out space after the last card at the same speed.
+  const sectionHeight = `${Math.max(300, cases.length * 225 + 75)}vh`;
 
   return (
     <section
@@ -214,7 +218,7 @@ export default function HorizontalFeatureReveal({
                 )}
               </div>
 
-              <div className="flex w-[60%] flex-col gap-[5vh] pt-[7%] max-[1025px]:w-full max-[1025px]:gap-[4vw] max-md:gap-[7vw] max-md:pt-0">
+              <div data-case-text className="flex w-[60%] flex-col gap-[5vh] pt-[7%] max-[1025px]:w-full max-[1025px]:gap-[4vw] max-md:gap-[7vw] max-md:pt-0">
                 <p
                   data-case-number
                   data-reveal

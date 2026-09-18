@@ -9,8 +9,9 @@ const FONT_SIZE = 72;
 // Helvetica/Arial capitals are ~0.72em tall; the viewBox hugs them so the word
 // can span the full width without empty bands above or below.
 const CAP_HEIGHT = FONT_SIZE * 0.72;
-const PAD = 2;
-// Horizontal padding is only half the outline stroke, so the letters touch the content edges.
+// Padding is only half the outline stroke, so the box hugs the letters on every
+// side: they touch the content edges, and spacing above/below is set by the parent.
+const PAD = 0.15;
 const PAD_X = 0.15;
 
 /** Big outlined word; a pink → red gradient follows the cursor over it. */
