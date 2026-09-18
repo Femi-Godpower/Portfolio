@@ -56,11 +56,11 @@ const SITEMAP_XSL = `<?xml version="1.0" encoding="UTF-8"?>
             gap: 16px; flex-wrap: wrap; margin-bottom: 32px;
           }
           .brand {
-            font-weight: 800; font-size: 14px; letter-spacing: 0.3em;
+            font-weight: 600; font-size: 14px; letter-spacing: 0.3em;
             text-transform: uppercase; text-decoration: none;
-            background: var(--gradient); -webkit-background-clip: text; background-clip: text;
-            color: transparent;
+            color: rgba(255, 255, 255, 0.8); transition: color 0.2s;
           }
+          .brand:hover { color: #ffffff; }
           h1 { margin: 8px 0 0; font-size: clamp(32px, 5vw, 48px); font-weight: 700; letter-spacing: -0.03em; }
           .intro { margin: 8px 0 0; color: var(--muted); font-size: 15px; max-width: 52ch; line-height: 1.5; }
           .home {
@@ -208,7 +208,7 @@ export function GET(): Response {
   return new Response(SITEMAP_XSL, {
     headers: {
       "Content-Type": "text/xsl; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "public, max-age=300",
     },
   });
 }
