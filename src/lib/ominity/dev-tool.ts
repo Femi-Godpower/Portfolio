@@ -32,12 +32,10 @@ export const createStarterDevToolSnapshot = (
     readonly message: string;
   }> = [];
 
-  if (!config.useMockData) {
-    requiredEnvironment.push(
-      { name: "OMINITY_API_URL", value: config.apiUrl, message: "Required for live Ominity requests." },
-      { name: "OMINITY_API_KEY", value: config.apiKey, message: "Required by server-side Ominity clients." },
-    );
-  }
+  requiredEnvironment.push(
+    { name: "OMINITY_API_URL", value: config.apiUrl, message: "Required for live Ominity requests." },
+    { name: "OMINITY_API_KEY", value: config.apiKey, message: "Required by server-side Ominity clients." },
+  );
 
   const missingEnvironment = requiredEnvironment
     .filter((item) => !isConfigured(item.value))
@@ -46,9 +44,6 @@ export const createStarterDevToolSnapshot = (
 
   if (config.nodeEnv === "production" && config.devTool) {
     warnings.push("The Ominity Dev Tool is enabled in production.");
-  }
-  if (config.nodeEnv === "production" && config.useMockData) {
-    warnings.push("Mock data is enabled in production.");
   }
   if (config.nodeEnv === "production" && /localhost|127\.0\.0\.1/.test(config.siteUrl)) {
     warnings.push("The production site URL points to localhost.");
@@ -61,7 +56,7 @@ export const createStarterDevToolSnapshot = (
     {
       label: "Configuration mode",
       status: "enabled",
-      message: config.useMockData ? "Using the built-in mock data source." : "Using the live Ominity API.",
+      message: "Using the live Ominity API.",
     },
     {
       label: "Current channel",
@@ -85,11 +80,9 @@ export const createStarterDevToolSnapshot = (
     })),
   ];
   const flags: OminityDevToolFlag[] = [
-    { label: "Mock data", value: config.useMockData, status: config.useMockData ? "enabled" : "disabled" },
     { label: "Strict components", value: config.strictMissingComponents, status: config.strictMissingComponents ? "enabled" : "disabled" },
   ];
-  const displayedApiUrl = config.apiUrl
-    ?? (config.useMockData ? "Not used in mock mode" : undefined);
+  const displayedApiUrl = config.apiUrl;
 
   return {
     integration: {
@@ -102,7 +95,7 @@ export const createStarterDevToolSnapshot = (
       nextVersion: nextPackage.version,
       ...(displayedApiUrl ? { apiUrl: displayedApiUrl } : {}),
       basePath: config.basePath || "/",
-      mockData: config.useMockData,
+      mockData: false,
       debugLogs: config.debugLogs,
       devTool: config.devTool,
       flags,
@@ -113,7 +106,7 @@ export const createStarterDevToolSnapshot = (
       },
     },
     health: {
-      mode: config.useMockData ? "mock" : "live",
+      mode: "live",
       environment: config.nodeEnv,
       ...(displayedApiUrl ? { apiUrl: displayedApiUrl } : {}),
       ...(typeof channel?.id === "string" ? { channelId: channel.id } : {}),

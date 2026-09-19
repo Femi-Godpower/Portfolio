@@ -92,7 +92,8 @@ const toHomeLocaleRedirectMode = (
 export interface StarterOminityConfig {
   readonly nodeEnv: string;
   readonly siteUrl: string;
-  readonly useMockData: boolean;
+  /** Always false: the starter's demo fixtures were removed, the CMS is the only source. */
+  readonly useMockData: false;
   readonly debugLogs: boolean;
   readonly devTool: boolean;
   readonly strictMissingComponents: boolean;
@@ -136,7 +137,7 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
   cachedConfig = {
     nodeEnv: process.env.NODE_ENV ?? "development",
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-    useMockData: toBoolean(process.env.OMINITY_USE_MOCK_DATA, true),
+    useMockData: false,
     debugLogs: toBoolean(process.env.OMINITY_DEBUG_LOGS, false),
     devTool: toBoolean(
       process.env.OMINITY_DEV_TOOL,

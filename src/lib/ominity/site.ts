@@ -6,12 +6,10 @@ import {
 } from "@ominity/next/next";
 
 import { getStarterOminityConfig } from "./env";
-import { mockCmsClient } from "./mock-data";
 
 // No project-specific route resolvers: the shop (product/category links) was removed.
 const support = createOminitySiteSupport({
   getConfig: getStarterOminityConfig,
-  mockClient: mockCmsClient,
 });
 
 export type StarterChannelContext = OminityChannelContext;
