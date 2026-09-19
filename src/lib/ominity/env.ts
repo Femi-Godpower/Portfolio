@@ -113,6 +113,8 @@ export interface StarterOminityConfig {
   readonly gtmId?: string;
   /** Where gtm.js is loaded from: Google, or a first-party server-side container (Onetagger). */
   readonly gtmScriptOrigin: string;
+  /** Cookiebot domain group ID; used by the `cookie-declaration` block. */
+  readonly cookiebotId?: string;
 }
 
 const toHttpsOrigin = (value: string | undefined): string | undefined => {
@@ -167,6 +169,9 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
       ? { gtmId: process.env.GTM_ID!.trim() }
       : {}),
     gtmScriptOrigin: toHttpsOrigin(process.env.GTM_SCRIPT_ORIGIN) ?? "https://www.googletagmanager.com",
+    ...(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(process.env.COOKIEBOT_ID?.trim() ?? "")
+      ? { cookiebotId: process.env.COOKIEBOT_ID!.trim() }
+      : {}),
   };
 
   return cachedConfig;

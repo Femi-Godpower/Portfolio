@@ -4,6 +4,7 @@ import { createCmsRegistry, defineCmsComponent } from "@ominity/next/cms/renderi
 import { AboutBlock } from "@/components/cms/about-block";
 import { ApproachBlock } from "@/components/cms/approach-block";
 import { CaseRevealBlock } from "@/components/cms/case-reveal-block";
+import { CookieDeclarationBlock } from "@/components/cms/cookie-declaration-block";
 import { FormBlock } from "@/components/cms/form-block";
 import { LegalDocumentBlock } from "@/components/cms/legal-document-block";
 import { PortfolioHeroBlock } from "@/components/cms/portfolio-hero-block";
@@ -22,6 +23,7 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("about-me", AboutBlock),
   defineCmsComponent("site-footer", SiteFooterBlock),
   defineCmsComponent("legal-document", LegalDocumentBlock),
+  defineCmsComponent("cookie-declaration", CookieDeclarationBlock),
   // Contact form (starter block, kept for a future contact form).
   defineCmsComponent("form_block", FormBlock),
 ]);
