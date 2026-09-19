@@ -68,7 +68,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /** How long the name may stay hidden while measuring before it is shown fully drawn. */
-const STATIC_FALLBACK_MS = 900;
+const STATIC_FALLBACK_MS = 2500;
 
 /**
  * Rasterises a prepared copy of the SVG (white strokes) and returns its pixels.
@@ -276,19 +276,22 @@ function SvgPathDrawingTextAnimation({
       const svg = svgRef.current;
       if (!svg) return;
 
-      if (greeting) {
-        const corner = await measureInkCorner(svg).catch(() => null);
-        if (cancelled) return;
-        if (corner) setGlyphBox(corner);
-      }
+      // Everything in parallel: one letter after another took long enough that
+      // the static fallback kicked in first, flashing the name before it drew.
+      const cornerTask = greeting
+        ? measureInkCorner(svg)
+          .catch(() => null)
+          .then((corner) => {
+            if (!cancelled && corner) setGlyphBox(corner);
+          })
+        : Promise.resolve();
 
       if (reduceMotion) return;
-      const lengths: number[] = [];
-      for (let index = 0; index < letters.length; index += 1) {
-        const length = await measureLetterDashLength(svg, index).catch(() => fontSize * 4);
-        if (cancelled) return;
-        lengths.push(length);
-      }
+      const lengths = await Promise.all(
+        letters.map((_, index) => measureLetterDashLength(svg, index).catch(() => fontSize * 4)),
+      );
+      await cornerTask;
+      if (cancelled) return;
       setDashLengths(lengths);
     };
     void measure();
@@ -329,6 +332,8 @@ function SvgPathDrawingTextAnimation({
     // from the same frame. If the finished name is already on screen (static
     // fallback), start at that frame so the animation picks up without a jump.
     let elapsed = shownStaticRef.current ? drawMs : 0;
+    // ...and keep that finished name up a moment, instead of erasing it at once.
+    let pauseMs = shownStaticRef.current ? 1200 : 0;
     let last = performance.now();
     let raf = 0;
 
@@ -346,6 +351,15 @@ function SvgPathDrawingTextAnimation({
       const dt = Math.min(250, Math.max(0, now - last));
       last = now;
       if (!dashed) applyDashes();
+      if (pauseMs > 0) {
+        pauseMs -= dt;
+        dashLengths.forEach((_, index) => {
+          const el = els[index];
+          if (el) el.style.strokeDashoffset = "0";
+        });
+        raf = window.requestAnimationFrame(tick);
+        return;
+      }
       // While hovered, play on until the outline is complete, then hold that frame.
       elapsed = hoverRef.current
         ? Math.min(elapsed + dt, nextFullyDrawn(elapsed))
