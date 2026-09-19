@@ -20,7 +20,6 @@ import {
 
 import { getStarterChannelContext } from "@/lib/ominity/site";
 import { getCmsClient, getCmsRoutes } from "@/lib/ominity/site";
-import { toQueryString, type SearchParams } from "@/lib/query-string";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 import { cmsRegistry, cmsRendererOptions } from "@/lib/ominity/registry";
 import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
@@ -35,7 +34,6 @@ type CmsPageParams = Readonly<Record<string, string | readonly string[] | undefi
 
 interface CmsPageProps {
   params: Promise<CmsPageParams>;
-  searchParams?: Promise<SearchParams>;
 }
 
 interface ResolvedCmsRoute {
@@ -260,7 +258,7 @@ export async function generateMetadata({ params }: CmsPageProps): Promise<Metada
   };
 }
 
-export default async function CmsCatchAllPage({ params, searchParams }: CmsPageProps) {
+export default async function CmsCatchAllPage({ params }: CmsPageProps) {
   const routeParams = await params;
   const preview = await resolveDraftMode({ useNextDraftMode: true });
 
@@ -270,9 +268,7 @@ export default async function CmsCatchAllPage({ params, searchParams }: CmsPageP
   }
 
   if (resolved.route.shouldRedirect) {
-    // Keep the query string (Tag Assistant's gtm_debug, UTM tags, ad click ids).
-    // Only read here, so canonical ISR pages stay static.
-    redirect(`${resolved.route.canonicalPath}${await toQueryString(searchParams)}` as Route);
+    redirect(resolved.route.canonicalPath as Route);
   }
 
   const context: StarterRenderContext = {

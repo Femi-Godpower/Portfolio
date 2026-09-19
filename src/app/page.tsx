@@ -7,7 +7,6 @@ import CmsCatchAllPage, { generateMetadata as generateCmsCatchAllMetadata } from
 
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
-import { toQueryString, type SearchParams } from "@/lib/query-string";
 
 // Resolve `/` per request. Prerendered, a failed CMS lookup during the build was
 // cached as a permanent 404 for the bare domain.
@@ -42,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function HomePageRoute({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function HomePageRoute() {
   const config = getStarterOminityConfig();
 
   if (config.homeLocaleRedirectMode !== "off") {
@@ -61,9 +60,9 @@ export default async function HomePageRoute({ searchParams }: { searchParams: Pr
     });
 
     if (resolvedRedirect) {
-      redirect(`${resolvedRedirect.destinationPath}${await toQueryString(searchParams)}` as Route);
+      redirect(resolvedRedirect.destinationPath as Route);
     }
   }
 
-  return <CmsCatchAllPage params={Promise.resolve(ROOT_PARAMS)} searchParams={searchParams} />;
+  return <CmsCatchAllPage params={Promise.resolve(ROOT_PARAMS)} />;
 }
