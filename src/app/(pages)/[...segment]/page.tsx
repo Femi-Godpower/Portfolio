@@ -130,6 +130,27 @@ function resolveFallbackRoute(incomingPath: string, routing: CmsRoutingConfig): 
   };
 }
 
+const SITE_FOOTER_KEY = "site-footer";
+
+/**
+ * The footer is a block on the home page, but every page should end with it.
+ * Pages without their own footer borrow the home page's, so there is one
+ * footer to edit in the CMS.
+ */
+const resolveSharedFooter = async (locale: string, preview: boolean) => {
+  try {
+    const page = await getCmsClient().getPageByPath({
+      path: "/",
+      locale,
+      ...(preview ? { preview: true } : {}),
+    });
+
+    return page?.components?.find((component) => component.key === SITE_FOOTER_KEY) ?? null;
+  } catch {
+    return null;
+  }
+};
+
 const resolveCmsResult = async (params: CmsPageParams, preview: boolean): Promise<ResolvedCmsResult | null> => {
   const client = getCmsClient();
   const routing = await getChannelAwareCmsRouting();
@@ -279,6 +300,9 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
     debug: getStarterOminityConfig().debugLogs,
   };
 
+  const hasOwnFooter = resolved.page.components?.some((component) => component.key === SITE_FOOTER_KEY) ?? false;
+  const sharedFooter = hasOwnFooter ? null : await resolveSharedFooter(resolved.route.locale, preview);
+
   return (
     <div className="space-y-6">
       {renderCmsPage({
@@ -287,6 +311,15 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
         context,
         options: cmsRendererOptions,
       }) as ReactNode}
+
+      {sharedFooter
+        ? renderCmsPage({
+          page: { ...resolved.page, components: [sharedFooter] },
+          registry: cmsRegistry,
+          context,
+          options: cmsRendererOptions,
+        }) as ReactNode
+        : null}
     </div>
   );
 }

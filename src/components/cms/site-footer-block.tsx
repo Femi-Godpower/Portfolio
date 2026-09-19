@@ -7,16 +7,29 @@ import PortfolioFooter, {
   type SocialPlatform,
 } from "@/components/ui/portfolio-footer";
 
+import { localePrefixSegments } from "@ominity/next/cms";
+
+import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
+
 import { asRecordArray, asString } from "./helpers";
 
 const PLATFORMS: ReadonlyArray<SocialPlatform> = ["linkedin", "instagram", "x", "facebook", "ominity", "website"];
 
+/** "/en", "/be/nl" or "/" — the home page for this locale. */
+function homePathFor(locale: string, routing: { basePath: string; trailingSlash: boolean }, prefix: ReadonlyArray<string>): string {
+  const segments = [...(routing.basePath.replace(/^\/|\/$/g, "").split("/").filter(Boolean)), ...prefix];
+  const path = segments.length > 0 ? `/${segments.join("/")}` : "/";
+  return routing.trailingSlash && path !== "/" ? `${path}/` : path;
+}
+
 const asPlatform = (value: unknown): SocialPlatform =>
   PLATFORMS.find((platform) => platform === asString(value)) ?? "website";
 
-export function SiteFooterBlock({
+export async function SiteFooterBlock({
   component,
+  context,
 }: CmsComponentRenderProps<StarterRenderContext>) {
+  const routing = await getChannelAwareCmsRouting();
   // Links with the same column title become one column, in CMS order.
   const columns: FooterLinkColumn[] = [];
   for (const entry of asRecordArray(component.fields.links)) {
@@ -46,6 +59,7 @@ export function SiteFooterBlock({
       .filter((social) => social.href.length > 0),
     copyright: asString(component.fields.copyright).trim(),
     legalTitle: asString(component.fields.legal_title).trim(),
+    homePath: homePathFor(context.locale, routing, localePrefixSegments(context.locale, routing)),
     legalLinks: asRecordArray(component.fields.legal_links)
       .map((entry) => ({ label: asString(entry.label).trim(), href: asString(entry.url).trim() }))
       .filter((link) => link.label.length > 0 && link.href.length > 0),

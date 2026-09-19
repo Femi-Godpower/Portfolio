@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
 import { TextHoverEffect } from "@/components/ui/hover-footer";
 import { isFooterSnapLocked } from "@/lib/scroll-snap-lock";
+import { useSectionLink } from "@/lib/use-section-link";
 
 export type SocialPlatform = "linkedin" | "instagram" | "x" | "facebook" | "ominity" | "website";
 
@@ -25,6 +26,8 @@ export interface PortfolioFooterData {
   /** Column after Contact (sitemap, privacy, terms). */
   legalTitle: string;
   legalLinks: Array<{ label: string; href: string }>;
+  /** Localized home path, e.g. "/en". Section links (#works) navigate there first. */
+  homePath: string;
 }
 
 const ACCENT = "text-[#f093fb]";
@@ -103,6 +106,14 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
 
 /** Links, contact and socials, with the big name right under the divider. */
 function FooterContent({ data }: { data: PortfolioFooterData }) {
+  // Section links work from every page and leave the URL clean.
+  const followSectionLink = useSectionLink(data.homePath);
+  const sectionLinkProps = (href: string) => ({
+    href: href.startsWith("#") ? data.homePath : href,
+    onClick: (event: MouseEvent<HTMLAnchorElement>) => {
+      if (followSectionLink(href)) event.preventDefault();
+    },
+  });
   const emailHref = data.email.includes("@") ? `mailto:${data.email}` : undefined;
   const phoneDigits = data.phone.replace(/[^+\d]/g, "");
   const phoneHref = phoneDigits ? `tel:${phoneDigits}` : undefined;
@@ -121,7 +132,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
               <ul className="space-y-3">
                 {column.links.map((link, index) => (
                   <li key={`${link.label}-${index}`}>
-                    <a href={link.href} className="transition-colors hover:text-[#f093fb]">
+                    <a {...sectionLinkProps(link.href)} className="transition-colors hover:text-[#f093fb]">
                       {link.label}
                     </a>
                   </li>

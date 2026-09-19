@@ -16,6 +16,7 @@ import { useEffect, useMemo } from "react";
 
 import { CircleMenu, type CircleMenuItem } from "@/components/ui/circle-menu";
 import { resolveUiDictionary } from "@/lib/i18n/ui-dictionary";
+import { useSectionLink } from "@/lib/use-section-link";
 
 interface LanguageOption {
   readonly language: string;
@@ -183,6 +184,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   }, [currentLocale]);
 
   const homePath = localizeRelativePath("/", currentLocale, routing);
+  // Section links keep the clean home URL; the scroll happens in JS, also when
+  // the visitor is on another page (cookie policy, terms…).
+  const followSectionLink = useSectionLink(homePath);
 
   const onLanguageChange = (nextLanguage: string) => {
     const nextLocale = resolveLocaleForLanguage(props.locales, nextLanguage, currentLocale);
@@ -212,10 +216,10 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
           value: entry.language,
         }))
       : []),
-    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: "#top" },
-    { id: "cases", label: dictionary.nav.cases, icon: <Briefcase size={16} />, href: "#works" },
-    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: "#approach" },
-    { id: "about", label: dictionary.nav.about, icon: <UserRound size={16} />, href: "#about" },
+    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: homePath, section: "top" },
+    { id: "cases", label: dictionary.nav.cases, icon: <Briefcase size={16} />, href: homePath, section: "works" },
+    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: homePath, section: "approach" },
+    { id: "about", label: dictionary.nav.about, icon: <UserRound size={16} />, href: homePath, section: "about" },
   ];
 
   return (
@@ -235,8 +239,9 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
             items={menuItems}
             openLabel={dictionary.nav.menu}
             closeLabel={dictionary.nav.close}
-            onSelectItem={(item) => {
+            onSelectItem={(item, event) => {
               if (item.value && item.value !== activeLanguage) onLanguageChange(item.value);
+              if (item.section && followSectionLink(`#${item.section}`)) event?.preventDefault();
             }}
           />
         </nav>

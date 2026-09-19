@@ -4,7 +4,6 @@ import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 
-import { lockFooterSnap } from "@/lib/scroll-snap-lock";
 import { cn } from "@/lib/utils";
 
 const CONSTANTS = {
@@ -29,33 +28,14 @@ const pointOnArc = (index: number, total: number, radius: number) => {
 
 const GRADIENT = "linear-gradient(90deg, #f093fb, #f5576c)";
 
-/** Same-page anchors (#works…) glide to their section instead of jumping. */
-function scrollToAnchor(event: MouseEvent<HTMLAnchorElement>, href: string) {
-  if (!href.startsWith("#")) return;
-  const target = href === "#top" || href === "#"
-    ? document.getElementById("top") ?? document.body
-    : document.getElementById(decodeURIComponent(href.slice(1)));
-  if (!target) return;
-
-  event.preventDefault();
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const top = target.getBoundingClientRect().top + window.scrollY;
-
-  // Keep the footer's snap out of this scroll, or it hijacks it and skips the
-  // section. A long glide takes longer, so scale the lock with the distance.
-  const distance = Math.abs(top - window.scrollY);
-  lockFooterSnap(reduceMotion ? 200 : Math.min(600 + distance / 3, 3000));
-
-  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
-  window.history.replaceState(null, "", href);
-}
-
 export interface CircleMenuItem {
   id: string;
   label: string;
   icon: ReactNode;
-  /** Link target; same-page anchors like #works work too */
+  /** Link target. Section links keep the clean page URL and scroll via onSelectItem. */
   href?: string;
+  /** Home-page section this item scrolls to, e.g. "works". */
+  section?: string;
   /** Without href the item is a button reporting this value via onSelectItem (e.g. a language code) */
   value?: string;
   /** Highlight as current, e.g. the active language */
@@ -67,7 +47,7 @@ interface MenuItemProps {
   index: number;
   totalItems: number;
   isOpen: boolean;
-  onSelect: (item: CircleMenuItem) => void;
+  onSelect: (item: CircleMenuItem, event?: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const MenuItem = ({ item, index, totalItems, isOpen, onSelect }: MenuItemProps) => {
@@ -122,8 +102,7 @@ const MenuItem = ({ item, index, totalItems, isOpen, onSelect }: MenuItemProps) 
       {...shared}
       href={item.href}
       onClick={(event) => {
-        scrollToAnchor(event, item.href!);
-        onSelect(item);
+        onSelect(item, event);
       }}
       aria-current={item.active ? "true" : undefined}
     >
@@ -197,7 +176,7 @@ export const CircleMenu = ({
   closeIcon = <X size={18} />,
 }: {
   items: CircleMenuItem[];
-  onSelectItem?: (item: CircleMenuItem) => void;
+  onSelectItem?: (item: CircleMenuItem, event?: MouseEvent<HTMLAnchorElement>) => void;
   openLabel: string;
   closeLabel: string;
   openIcon?: ReactNode;
@@ -303,8 +282,8 @@ export const CircleMenu = ({
             index={index}
             totalItems={items.length}
             isOpen={isOpen}
-            onSelect={(selected) => {
-              onSelectItem?.(selected);
+            onSelect={(selected, event) => {
+              onSelectItem?.(selected, event);
               close();
             }}
           />
