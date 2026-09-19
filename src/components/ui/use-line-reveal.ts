@@ -30,8 +30,12 @@ export function useLineReveal(ref: RefObject<HTMLElement | null>, deps: Dependen
 
       q("[data-line-reveal]").forEach((element) => {
         const split = new SplitText(element, { type: "lines", mask: "lines" });
+        // Each mask is exactly one line tall, which clips descenders (g, p, y) on
+        // tight line-heights. Extend it downward without changing the layout.
+        gsap.set(split.masks, { paddingBottom: "0.2em", marginBottom: "-0.2em" });
         gsap.from(split.lines, {
-          yPercent: 100,
+          // Past the taller mask, so no sliver of the line shows before it reveals.
+          yPercent: 125,
           stagger: 0.08,
           duration: 0.7,
           ease: "power2.out",

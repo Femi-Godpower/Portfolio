@@ -109,7 +109,20 @@ export interface StarterOminityConfig {
   readonly revalidateSeconds: number;
   readonly draftToken?: string;
   readonly formsValidateFormId: boolean;
+  /** Google Tag Manager container; the cookie banner is a consent tag inside it. */
+  readonly gtmId?: string;
+  /** Where gtm.js is loaded from: Google, or a first-party server-side container (Onetagger). */
+  readonly gtmScriptOrigin: string;
 }
+
+const toHttpsOrigin = (value: string | undefined): string | undefined => {
+  try {
+    const url = new URL(value?.trim() ?? "");
+    return url.protocol === "https:" ? url.origin : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 let cachedConfig: StarterOminityConfig | null = null;
 
@@ -150,6 +163,10 @@ export const getStarterOminityConfig = (): StarterOminityConfig => {
       ? { draftToken: process.env.OMINITY_DRAFT_TOKEN }
       : {}),
     formsValidateFormId: toBoolean(process.env.OMINITY_FORMS_VALIDATE_FORM_ID, true),
+    ...(/^GTM-[A-Z0-9]+$/.test(process.env.GTM_ID?.trim() ?? "")
+      ? { gtmId: process.env.GTM_ID!.trim() }
+      : {}),
+    gtmScriptOrigin: toHttpsOrigin(process.env.GTM_SCRIPT_ORIGIN) ?? "https://www.googletagmanager.com",
   };
 
   return cachedConfig;

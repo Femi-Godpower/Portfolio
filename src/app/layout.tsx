@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { OminityDevTool } from "@ominity/next/dev-tool";
 
 import { Providers } from "@/components/providers";
+import { GoogleTagManager } from "@/components/site/google-tag-manager";
 import { SiteHeader } from "@/components/site/site-header";
 import { createStarterDevToolSnapshot } from "@/lib/ominity/dev-tool";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
@@ -29,6 +30,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang={channel?.defaultLocale ?? "en"} suppressHydrationWarning>
+      <head>
+        {config.gtmId ? <GoogleTagManager gtmId={config.gtmId} scriptOrigin={config.gtmScriptOrigin} /> : null}
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <Providers
           devToolEnabled={config.devTool}
