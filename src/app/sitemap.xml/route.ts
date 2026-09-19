@@ -1,3 +1,4 @@
+import type { CmsRoute } from "@ominity/next/cms";
 import { buildCmsSitemap } from "@ominity/next/next";
 
 import { getStarterOminityConfig } from "@/lib/ominity/env";
@@ -25,10 +26,32 @@ function toIsoDate(value: Date | string | undefined): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+// The routes API answers in one language per request (the Accept-Language) and
+// its routes carry no locale, so a single call only yields the default language.
+// Fetch each channel locale separately and tag the routes with it: that gives one
+// entry per page per language, with hreflang alternates between them.
+async function getRoutesForAllLocales(
+  locales: ReadonlyArray<{ readonly code: string; readonly language: string }>,
+): Promise<CmsRoute[]> {
+  const perLocale = await Promise.all(
+    locales.map(async (locale) => {
+      const routes = await getCmsRoutes({ locale: locale.code });
+      return routes.map((route) => ({
+        ...route,
+        id: `${route.id}:${locale.language}`,
+        locale: locale.language,
+        translations: {},
+      }));
+    }),
+  );
+
+  return perLocale.flat();
+}
+
 export async function GET(): Promise<Response> {
   const config = getStarterOminityConfig();
-  const routes = await getCmsRoutes();
   const routing = await getChannelAwareCmsRouting();
+  const routes = await getRoutesForAllLocales(routing.locales);
 
   const entries = buildCmsSitemap({
     routes,
