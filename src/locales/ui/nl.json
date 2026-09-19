@@ -42,5 +42,11 @@
     "description": "Je bent off-piste gegaan. Deze pagina bestaat niet (meer).",
     "home": "Naar home",
     "projects": "Bekijk mijn projecten"
+  },
+  "contact": {
+    "email": "E-mail",
+    "location": "Locatie",
+    "response": "Reactietijd",
+    "formUnavailable": "Het contactformulier is nu niet beschikbaar. Stuur me gerust een e-mail."
   }
 }

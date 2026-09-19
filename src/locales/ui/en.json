@@ -42,5 +42,11 @@
     "description": "Looks like you went off-piste. This page doesn't exist (anymore).",
     "home": "Back home",
     "projects": "See my projects"
+  },
+  "contact": {
+    "email": "Email",
+    "location": "Location",
+    "response": "Response time",
+    "formUnavailable": "The contact form is not available right now. Send me an email instead."
   }
 }
