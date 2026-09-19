@@ -107,13 +107,32 @@ jobs:
 
           chmod 600 ~/.ssh/known_hosts
 
+      # Diagnostics: rsync has been dropping the connection right after login
+      # ("0 bytes received"). Shows what the server-side shell can see.
+      - name: Check server
+        continue-on-error: true
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" '
+              echo "shell: $SHELL"
+              echo "rsync: $(command -v rsync || echo NOT FOUND)"
+              rsync --version 2>&1 | head -1
+              echo "--- disk"; df -h "'"${DEPLOY_PATH}"'" 2>&1 | tail -1
+              echo "--- httpdocs size / files"
+              du -sh "'"${DEPLOY_PATH}"'" 2>&1 | tail -1
+              find "'"${DEPLOY_PATH}"'" 2>/dev/null | wc -l
+              echo "--- limits"; ulimit -a 2>&1 | grep -Ei "processes|memory|open files"
+            '
+
       # --delete keeps httpdocs identical to the bundle, except for files the
       # server itself owns: .env, Passenger's tmp/, the SSL challenge dir and the log.
       - name: Deploy to Plesk
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          sshpass -e rsync -az --delete \
+          sshpass -e rsync -az --delete --stats --timeout=120 \
             --exclude=".env" \
             --exclude="tmp/" \
             --exclude=".well-known/" \
