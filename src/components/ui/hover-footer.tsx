@@ -18,6 +18,78 @@ const PAD_X = 0.15;
 // the font size; this leaves headroom for other fonts.
 const DASH = FONT_SIZE * 7;
 
+interface InkBox {
+  /** Distance from the anchor to the ink's left edge, positive to the left. */
+  left: number;
+  width: number;
+  ascent: number;
+  descent: number;
+}
+
+/**
+ * The ink box of `text`, found by painting it once and reading the pixels back.
+ *
+ * measureText's actualBoundingBox* would be the obvious way, but Safari returns
+ * the advance box there (left 0, right = the advance width), side bearings and
+ * all. The box then hugs the font's spacing instead of the letters, and the word
+ * ends up visibly narrower than the column above it. Pixels agree everywhere.
+ */
+function measureInk(text: string, font: string): InkBox | null {
+  const canvas = document.createElement("canvas");
+  const probe = canvas.getContext("2d");
+  if (!probe) return null;
+
+  probe.font = font;
+  const advance = probe.measureText(text).width;
+  if (!(advance > 0)) return null;
+
+  // Room for side bearings, overshoot and any descender, whichever way they fall.
+  const margin = FONT_SIZE;
+  const originX = margin;
+  const baselineY = margin + FONT_SIZE;
+  canvas.width = Math.ceil(advance) + margin * 2;
+  canvas.height = FONT_SIZE * 2 + margin * 2;
+
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.font = font;
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(text, originX, baselineY);
+
+  const { width: w, height: h } = canvas;
+  let data: Uint8ClampedArray;
+  try {
+    data = ctx.getImageData(0, 0, w, h).data;
+  } catch {
+    // Blocked canvas readback: keep whatever the box already had.
+    return null;
+  }
+
+  let minX = w;
+  let maxX = -1;
+  let minY = h;
+  let maxY = -1;
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      if (data[(y * w + x) * 4 + 3]! > 12) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+
+  return {
+    left: originX - minX,
+    width: maxX - minX + 1,
+    ascent: baselineY - minY,
+    descent: Math.max(0, maxY - baselineY + 1),
+  };
+}
+
 /** Big outlined word; a pink → red gradient follows the cursor over it. */
 export const TextHoverEffect = ({
   text,
@@ -44,9 +116,9 @@ export const TextHoverEffect = ({
   // guaranteed to close however long its glyph outline turns out to be.
   const [drawn, setDrawn] = useState(false);
   // Ink box of the word: the first letter's left edge to the last letter's right edge.
-  const [ink, setInk] = useState({ left: 0, width: 296, ascent: CAP_HEIGHT });
+  const [ink, setInk] = useState({ left: 0, width: 296, ascent: CAP_HEIGHT, descent: 0 });
   const width = ink.width + PAD_X * 2;
-  const height = ink.ascent + PAD * 2;
+  const height = ink.ascent + ink.descent + PAD * 2;
   const baseline = PAD + ink.ascent;
 
   // Fit the viewBox to the visible letters (not the font's advance widths, which
@@ -57,18 +129,10 @@ export const TextHoverEffect = ({
       await document.fonts.ready;
       const el = measureRef.current;
       if (!el || cancelled) return;
-      const ctx = document.createElement("canvas").getContext("2d");
-      if (!ctx) return;
       const style = getComputedStyle(el);
-      ctx.font = `${style.fontWeight} ${FONT_SIZE}px ${style.fontFamily}`;
-      const metrics = ctx.measureText(text.toUpperCase());
-      const inkWidth = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
-      if (inkWidth > 0) {
-        setInk({
-          left: metrics.actualBoundingBoxLeft,
-          width: inkWidth,
-          ascent: metrics.actualBoundingBoxAscent || CAP_HEIGHT,
-        });
+      const next = measureInk(text.toUpperCase(), `${style.fontWeight} ${FONT_SIZE}px ${style.fontFamily}`);
+      if (next && !cancelled) {
+        setInk(next);
       }
     };
     void fit();

@@ -71,6 +71,43 @@ Tick these off on the iPhone 7 once the new build is live.
 
 ---
 
+## Footer — reported 2026-09-20 (second round)
+
+Three separate bugs in the big outlined name at the bottom of the page.
+
+- [ ] **A. The outlines never finished drawing**
+      The draw-in used `whileInView` on the `<text>` inside the SVG, which never
+      fired, so the word sat forever at its starting dash offset — fragments of
+      letters instead of closed shapes (your screenshot). It now watches the
+      `<svg>` instead, and drops the dash entirely once the draw is done, so every
+      letter closes whatever its outline length turns out to be.
+      *Also:* the SVG is `overflow-visible` now — the box hugs the letters exactly,
+      so the outer half of the stroke sat right on the clipping edge.
+
+- [ ] **B. The word was inset from the columns above it (Safari only)**
+      The viewBox was fitted using `measureText().actualBoundingBoxLeft/Right`.
+      Chrome returns the real ink box there; **Safari returns the advance box**
+      (left `0`, right = advance width), side bearings included. So on Safari the
+      box hugged the font's spacing instead of the letters and the word came out
+      ~36px narrower than the "Navigate" column above it. The ink box is now read
+      from actual pixels, which every engine agrees on.
+      *Verified:* WebKit now computes the same viewBox as Chromium (163.3 x 52.3),
+      and the word lines up with the columns exactly.
+
+- [ ] **C. On a phone the footer ran off the screen it snaps to**
+      The footer glides into view promising to fill the screen, but its content
+      needed 923px on a 664px phone — the divider, socials, copyright and the whole
+      name were 235px below the fold. The link lists are now two-up on phones with
+      Contact on its own full-width row underneath (the email does not fit in half
+      a phone), and the vertical rhythm is tighter. It now measures exactly one
+      screen with the name 16px above the fold. Desktop is unchanged.
+
+**Check on the phone:** scroll to the bottom — Navigate and Legal sit side by side,
+Contact underneath, and the big FEMI draws itself in as four closed letters that
+line up with the columns above, all on one screen.
+
+---
+
 ## Known leftovers (not part of this fix)
 
 - [ ] **Cookie banner is see-through on small screens** — the hero text shows through

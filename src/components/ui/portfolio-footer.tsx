@@ -124,11 +124,15 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
     // has snapped into view. justify-end puts any spare height above the links,
     // keeping FEMI close to the bottom edge.
     <div className="relative flex min-h-screen w-full flex-col justify-end overflow-hidden text-white/60">
-      <div className="relative z-40 mx-auto w-full max-w-7xl px-6 pt-12 sm:px-14 sm:pt-12">
-        <div className="grid grid-cols-1 gap-12 pb-8 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-16">
+      <div className="relative z-40 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-14 sm:pt-12">
+        {/* Phones get the link lists two-up: stacked, the footer ran ~260px past
+            the screen it snaps to, so the name and copyright never came into
+            view. Contact drops to its own full-width row below them, because the
+            email address does not fit in half a phone. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 pb-8 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-16">
           {data.columns.map((column) => (
             <div key={column.title}>
-              <h4 className="mb-6 text-lg font-semibold text-white">{column.title}</h4>
+              <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{column.title}</h4>
               <ul className="space-y-3">
                 {column.links.map((link, index) => (
                   <li key={`${link.label}-${index}`}>
@@ -142,9 +146,10 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           ))}
 
           {hasContact ? (
-            <div>
+            // Last and full width on phones, so the email address gets a whole line.
+            <div className="max-sm:order-last max-sm:col-span-2">
               {data.contactTitle ? (
-                <h4 className="mb-6 text-lg font-semibold text-white">{data.contactTitle}</h4>
+                <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{data.contactTitle}</h4>
               ) : null}
               <ul className="space-y-4">
                 {data.email ? (
@@ -176,7 +181,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           {data.legalLinks.length > 0 ? (
             <div>
               {data.legalTitle ? (
-                <h4 className="mb-6 text-lg font-semibold text-white">{data.legalTitle}</h4>
+                <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{data.legalTitle}</h4>
               ) : null}
               <ul className="space-y-3">
                 {data.legalLinks.map((link, index) => (
@@ -191,7 +196,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           ) : null}
         </div>
 
-        <hr className="my-6 border-t border-white/10" />
+        <hr className="my-5 border-t border-white/10 sm:my-6" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
           {data.socials.length > 0 ? (
@@ -222,7 +227,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
 
       {/* Same width as the content above. mt-6 matches the divider-to-icons gap
           (hr my-6); a small bottom padding leaves a little room under the letters. */}
-      <div className="relative z-40 mx-auto mt-6 w-full max-w-7xl px-6 pb-6 sm:px-14 sm:pb-8">
+      <div className="relative z-40 mx-auto mt-4 w-full max-w-7xl px-6 pb-4 sm:mt-6 sm:px-14 sm:pb-8">
         <TextHoverEffect text={data.bigText} />
       </div>
     </div>
