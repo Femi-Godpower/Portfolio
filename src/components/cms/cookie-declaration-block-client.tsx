@@ -31,13 +31,31 @@ export function CookieDeclarationClient({ cookiebotId, language }: CookieDeclara
     script.dataset.culture = language;
     script.src = `https://consent.cookiebot.com/${encodeURIComponent(cookiebotId)}/cd.js`;
     container.appendChild(script);
+
+    // cd.js renders whenever it finishes loading, so label the table cells as
+    // they appear. The labels are what the phone layout shows in front of each
+    // value (see .cookie-declaration in globals.css).
+    const labelCells = () => {
+      for (const table of container.querySelectorAll("table")) {
+        const headers = [...table.querySelectorAll("th")].map((th) => th.textContent?.trim() ?? "");
+        for (const row of table.querySelectorAll("tbody tr, tr")) {
+          [...row.querySelectorAll("td")].forEach((cell, index) => {
+            if (headers[index]) cell.setAttribute("data-label", headers[index]);
+          });
+        }
+      }
+    };
+
+    const observer = new MutationObserver(labelCells);
+    observer.observe(container, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [cookiebotId, language]);
 
   return (
     <div
       ref={containerRef}
-      // Cookiebot's markup is unstyled; fit it to the dark legal pages.
-      className="max-w-3xl space-y-4 leading-relaxed text-white/70 [&_a]:text-[#f093fb] [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-white [&_table]:my-4 [&_table]:w-full [&_table]:text-sm [&_td]:border-t [&_td]:border-white/10 [&_td]:py-2 [&_td]:pr-4 [&_td]:align-top [&_th]:py-2 [&_th]:pr-4 [&_th]:text-left [&_th]:font-medium [&_th]:text-white"
+      // Cookiebot's own class names are styled in globals.css (.cookie-declaration).
+      className="cookie-declaration max-w-3xl"
     />
   );
 }

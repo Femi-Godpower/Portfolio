@@ -53,3 +53,116 @@
     radial-gradient(ellipse 90% 1000px at 50% 100%, rgba(245, 87, 108, 0.16), transparent 70%);
   background-repeat: no-repeat;
 }
+
+/**
+ * Cookiebot's cookie declaration (the `cookie-declaration` block).
+ * Its markup is fixed and unstyled, so it is dressed to match the legal pages
+ * here: category blocks as cards, tables without rules, stacked on phones.
+ */
+.cookie-declaration {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+}
+
+/* Cookiebot repeats the consent banner's title and text at the top. It is
+   already on the banner, so it only duplicates content here. */
+.cookie-declaration .CookieDeclarationDialogText {
+  display: none;
+}
+
+.cookie-declaration a {
+  color: #f093fb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cookie-declaration a:hover {
+  color: #f5576c;
+}
+
+.cookie-declaration .CookieDeclarationIntro {
+  margin-bottom: 2rem;
+}
+
+.cookie-declaration .CookieDeclarationLastUpdated {
+  margin-bottom: 2.5rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cookie-declaration .CookieDeclarationType {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cookie-declaration .CookieDeclarationTypeHeader {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.cookie-declaration .CookieDeclarationTypeDescription {
+  display: block;
+  margin-bottom: 1.25rem;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.cookie-declaration .CookieDeclarationTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.cookie-declaration .CookieDeclarationTableHeader {
+  padding: 0 1rem 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cookie-declaration .CookieDeclarationTableCell {
+  padding: 0.875rem 1rem 0.875rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.cookie-declaration .CookieDeclarationTableCell:first-child {
+  font-weight: 500;
+  color: #fff;
+}
+
+/* Phones: a table this wide does not fit, so each row becomes a small card
+   with the column name in front of each value. */
+@media (max-width: 640px) {
+  .cookie-declaration .CookieDeclarationTable thead {
+    display: none;
+  }
+
+  .cookie-declaration .CookieDeclarationTable tr {
+    display: block;
+    padding: 0.875rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .cookie-declaration .CookieDeclarationTableCell {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.125rem 0;
+    border: 0;
+  }
+
+  .cookie-declaration .CookieDeclarationTableCell::before {
+    content: attr(data-label);
+    flex: none;
+    width: 7.5rem;
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
