@@ -140,26 +140,31 @@
 }
 
 /* Phones: a table this wide does not fit, so each row becomes a small card
-   with the column name in front of each value. */
+   with the column name in front of each value. Shared by the `table` block
+   and Cookiebot's declaration. */
 @media (max-width: 640px) {
-  .cookie-declaration .CookieDeclarationTable thead {
+  .cookie-declaration .CookieDeclarationTable thead,
+  .data-table thead {
     display: none;
   }
 
-  .cookie-declaration .CookieDeclarationTable tr {
+  .cookie-declaration .CookieDeclarationTable tr,
+  .data-table tbody tr {
     display: block;
     padding: 0.875rem 0;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .cookie-declaration .CookieDeclarationTableCell {
+  .cookie-declaration .CookieDeclarationTableCell,
+  .data-table tbody td {
     display: flex;
     gap: 0.75rem;
     padding: 0.125rem 0;
     border: 0;
   }
 
-  .cookie-declaration .CookieDeclarationTableCell::before {
+  .cookie-declaration .CookieDeclarationTableCell::before,
+  .data-table tbody td[data-label]:not([data-label=""])::before {
     content: attr(data-label);
     flex: none;
     width: 7.5rem;

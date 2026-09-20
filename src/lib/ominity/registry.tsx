@@ -10,6 +10,7 @@ import { FormBlock } from "@/components/cms/form-block";
 import { LegalDocumentBlock } from "@/components/cms/legal-document-block";
 import { PortfolioHeroBlock } from "@/components/cms/portfolio-hero-block";
 import { SiteFooterBlock } from "@/components/cms/site-footer-block";
+import { TableBlock } from "@/components/cms/table-block";
 
 import { getStarterOminityConfig } from "./env";
 import type { CmsRenderContext as StarterRenderContext } from "@ominity/next/cms";
@@ -26,6 +27,7 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("site-footer", SiteFooterBlock),
   defineCmsComponent("legal-document", LegalDocumentBlock),
   defineCmsComponent("cookie-declaration", CookieDeclarationBlock),
+  defineCmsComponent("table", TableBlock),
   // Contact form (starter block, kept for a future contact form).
   defineCmsComponent("form_block", FormBlock),
 ]);
