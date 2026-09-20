@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,10 @@ const CAP_HEIGHT = FONT_SIZE * 0.72;
 // side: they touch the content edges, and spacing above/below is set by the parent.
 const PAD = 0.15;
 const PAD_X = 0.15;
+// A dash on <text> restarts at every glyph outline, so it only has to cover the
+// longest single letter, not the whole word. The widest capitals measure ~5.6x
+// the font size; this leaves headroom for other fonts.
+const DASH = FONT_SIZE * 7;
 
 /** Big outlined word; a pink → red gradient follows the cursor over it. */
 export const TextHoverEffect = ({
@@ -32,6 +36,13 @@ export const TextHoverEffect = ({
   const measureRef = useRef<SVGTextElement>(null);
   const [hovered, setHovered] = useState(false);
   const [maskPosition, setMaskPosition] = useState({ cx: "50%", cy: "50%" });
+  // Watch the <svg>, not the <text>: whileInView on an SVG child never fired,
+  // which left the word stuck at its starting dash offset — outlines with gaps
+  // instead of finished letters.
+  const inView = useInView(svgRef, { once: true, amount: 0.4 });
+  // Once the outline is drawn the dash is dropped entirely, so every letter is
+  // guaranteed to close however long its glyph outline turns out to be.
+  const [drawn, setDrawn] = useState(false);
   // Ink box of the word: the first letter's left edge to the last letter's right edge.
   const [ink, setInk] = useState({ left: 0, width: 296, ascent: CAP_HEIGHT });
   const width = ink.width + PAD_X * 2;
@@ -93,7 +104,10 @@ export const TextHoverEffect = ({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onMouseMove={trackCursor}
-      className={cn("block h-auto w-full select-none uppercase", className)}
+      // overflow-visible: the box hugs the letters exactly, so the outer half of
+      // the stroke (and the miter at every corner) sits right on the viewport
+      // edge and would otherwise be shaved off.
+      className={cn("block h-auto w-full select-none overflow-visible uppercase", className)}
       aria-hidden
     >
       <defs>
@@ -133,10 +147,13 @@ export const TextHoverEffect = ({
       <motion.text
         {...textProps}
         className="fill-transparent stroke-[#f093fb99] font-[helvetica] font-bold"
-        initial={{ strokeDashoffset: 1400, strokeDasharray: 1400 }}
-        whileInView={{ strokeDashoffset: 0, strokeDasharray: 1400 }}
-        viewport={{ once: true, amount: 0.4 }}
+        strokeDasharray={drawn ? "none" : DASH}
+        initial={{ strokeDashoffset: DASH }}
+        animate={{ strokeDashoffset: inView ? 0 : DASH }}
         transition={{ duration: 4, ease: "easeInOut" }}
+        onAnimationComplete={() => {
+          if (inView) setDrawn(true);
+        }}
       >
         {text}
       </motion.text>
