@@ -18,6 +18,7 @@ import {
   type CmsRoutingConfig,
 } from "@ominity/next/cms";
 
+import { SiteFooter } from "@/components/site/site-footer";
 import { getStarterChannelContext } from "@/lib/ominity/site";
 import { getCmsClient, getCmsRoutes } from "@/lib/ominity/site";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
@@ -130,27 +131,6 @@ function resolveFallbackRoute(incomingPath: string, routing: CmsRoutingConfig): 
       && normalizedIncomingPath !== normalizePath(canonicalPath),
   };
 }
-
-const SITE_FOOTER_KEY = "site-footer";
-
-/**
- * The footer is a block on the home page, but every page should end with it.
- * Pages without their own footer borrow the home page's, so there is one
- * footer to edit in the CMS.
- */
-const resolveSharedFooter = async (locale: string, preview: boolean) => {
-  try {
-    const page = await getCmsClient().getPageByPath({
-      path: "/",
-      locale,
-      ...(preview ? { preview: true } : {}),
-    });
-
-    return page?.components?.find((component) => component.key === SITE_FOOTER_KEY) ?? null;
-  } catch {
-    return null;
-  }
-};
 
 const resolveCmsResult = async (params: CmsPageParams, preview: boolean): Promise<ResolvedCmsResult | null> => {
   const client = getCmsClient();
@@ -305,26 +285,22 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
     debug: getStarterOminityConfig().debugLogs,
   };
 
-  const hasOwnFooter = resolved.page.components?.some((component) => component.key === SITE_FOOTER_KEY) ?? false;
-  const sharedFooter = hasOwnFooter ? null : await resolveSharedFooter(resolved.route.locale, preview);
-
   return (
-    <div className="space-y-6">
-      {renderCmsPage({
-        page: resolved.page,
-        registry: cmsRegistry,
-        context,
-        options: cmsRendererOptions,
-      }) as ReactNode}
-
-      {sharedFooter
-        ? renderCmsPage({
-          page: { ...resolved.page, components: [sharedFooter] },
+    <>
+      <div className="space-y-6">
+        {renderCmsPage({
+          page: resolved.page,
           registry: cmsRegistry,
           context,
           options: cmsRendererOptions,
-        }) as ReactNode
-        : null}
-    </div>
+        }) as ReactNode}
+      </div>
+
+      {/* Every CMS page ends with the same footer. It is not a block: it comes
+          from the Site Footer content type, so there is one copy to edit. It
+          sits outside the spaced wrapper so it still butts up against the page,
+          the way it did when it was the last block on the home page. */}
+      <SiteFooter locale={resolved.route.locale} />
+    </>
   );
 }

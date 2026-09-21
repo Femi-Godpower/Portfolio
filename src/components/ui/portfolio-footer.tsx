@@ -4,6 +4,7 @@ import { useEffect, useRef, type MouseEvent } from "react";
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
 import { TextHoverEffect } from "@/components/ui/hover-footer";
+import { scrollToSection } from "@/lib/section-navigation";
 import { isFooterSnapLocked } from "@/lib/scroll-snap-lock";
 import { useSectionLink } from "@/lib/use-section-link";
 
@@ -104,13 +105,22 @@ const SOCIAL_LABELS: Record<SocialPlatform, string> = {
   website: "Website",
 };
 
+const TOP_HREF = "#top";
+
 /** Links, contact and socials, with the big name right under the divider. */
 function FooterContent({ data }: { data: PortfolioFooterData }) {
   // Section links work from every page and leave the URL clean.
   const followSectionLink = useSectionLink(data.homePath);
   const sectionLinkProps = (href: string) => ({
-    href: href.startsWith("#") ? data.homePath : href,
+    // "Back to top" means this page, on every page. The other anchors point at
+    // home-page sections, so off the home page they navigate there first.
+    href: href === TOP_HREF || !href.startsWith("#") ? href : data.homePath,
     onClick: (event: MouseEvent<HTMLAnchorElement>) => {
+      if (href === TOP_HREF) {
+        event.preventDefault();
+        scrollToSection("top");
+        return;
+      }
       if (followSectionLink(href)) event.preventDefault();
     },
   });
