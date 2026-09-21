@@ -9,7 +9,6 @@ import { CookieDeclarationBlock } from "@/components/cms/cookie-declaration-bloc
 import { FormBlock } from "@/components/cms/form-block";
 import { LegalDocumentBlock } from "@/components/cms/legal-document-block";
 import { PortfolioHeroBlock } from "@/components/cms/portfolio-hero-block";
-import { SiteFooterBlock } from "@/components/cms/site-footer-block";
 import { TableBlock } from "@/components/cms/table-block";
 
 import { getStarterOminityConfig } from "./env";
@@ -24,7 +23,8 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("approach", ApproachBlock),
   defineCmsComponent("about-me", AboutBlock),
   defineCmsComponent("contact", ContactBlock),
-  defineCmsComponent("site-footer", SiteFooterBlock),
+  // No "site-footer": the footer is site-wide now and comes from the
+  // Site Footer content type, rendered once in app/layout.tsx.
   defineCmsComponent("legal-document", LegalDocumentBlock),
   defineCmsComponent("cookie-declaration", CookieDeclarationBlock),
   defineCmsComponent("table", TableBlock),
