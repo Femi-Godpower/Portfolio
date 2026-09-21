@@ -22,6 +22,7 @@ import { getStarterChannelContext } from "@/lib/ominity/site";
 import { getCmsClient, getCmsRoutes } from "@/lib/ominity/site";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
 import { cmsRegistry, cmsRendererOptions } from "@/lib/ominity/registry";
+import { withLocalizedTranslations } from "@/lib/ominity/page-translations";
 import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
 import type { CmsRenderContext as StarterRenderContext } from "@ominity/next/cms";
 
@@ -247,7 +248,11 @@ export async function generateMetadata({ params }: CmsPageProps): Promise<Metada
     };
   }
 
-  const baseMetadata = buildNextMetadataFromPage(resolved.page, {
+  // The CMS reports the requested language's slug for every locale, so the page
+  // as fetched would produce hreflang alternates pointing at URLs that 404.
+  const page = await withLocalizedTranslations(resolved.page, resolved.route.locale, preview);
+
+  const baseMetadata = buildNextMetadataFromPage(page, {
     baseUrl: config.siteUrl,
     includeAlternates: true,
     includeCanonical: true,
