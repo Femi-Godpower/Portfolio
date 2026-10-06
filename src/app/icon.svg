@@ -1,11 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="11.5 10 44 44">
-  <!-- The F from the hero: outline with the same pink → red gradient, no background.
-       The viewBox is cropped tight around the letter so it fills the icon. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.5 2 60 60">
+  <!-- The F from the hero: outline with the same pink → red gradient on the site's
+       dark background. Google crops favicons to a circle in search results, so the
+       letter sits inside the circle that fits the square, with the background
+       filling the corners instead of the letter. -->
   <defs>
     <linearGradient id="g" x1="14" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#f093fb"/>
       <stop offset="1" stop-color="#f5576c"/>
     </linearGradient>
   </defs>
-  <path d="M19 12H48V21H31V28H44V36H31V52H19Z" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="3.5" y="2" width="60" height="60" fill="#0d0a0f"/>
+  <path d="M19 12H48V21H31V28H44V36H31V52H19Z" fill="none" stroke="url(#g)" stroke-width="3.5" stroke-linejoin="round"/>
 </svg>

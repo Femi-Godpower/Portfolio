@@ -3,10 +3,12 @@
 import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
 import { motion, useInView } from "motion/react";
 
+import { WORDMARK_FONT_FAMILY } from "@/lib/fonts";
+import { useSvgTextDashScale } from "@/lib/svg-text-dash";
 import { cn } from "@/lib/utils";
 
 const FONT_SIZE = 72;
-// Helvetica/Arial capitals are ~0.72em tall; the viewBox hugs them so the word
+// Arimo (Arial-shaped) capitals are ~0.72em tall; the viewBox hugs them so the word
 // can span the full width without empty bands above or below.
 const CAP_HEIGHT = FONT_SIZE * 0.72;
 // Padding is only half the outline stroke, so the box hugs the letters on every
@@ -112,6 +114,8 @@ export const TextHoverEffect = ({
   // which left the word stuck at its starting dash offset — outlines with gaps
   // instead of finished letters.
   const inView = useInView(svgRef, { once: true, amount: 0.4 });
+  // WebKit counts dash lengths in device pixels; see src/lib/svg-text-dash.ts.
+  const dash = DASH * useSvgTextDashScale(svgRef);
   // Once the outline is drawn the dash is dropped entirely, so every letter is
   // guaranteed to close however long its glyph outline turns out to be.
   const [drawn, setDrawn] = useState(false);
@@ -126,6 +130,8 @@ export const TextHoverEffect = ({
   useEffect(() => {
     let cancelled = false;
     const fit = async () => {
+      // The ink box is only right in the wordmark font itself, not a fallback.
+      await document.fonts.load(`bold ${FONT_SIZE}px ${WORDMARK_FONT_FAMILY}`).catch(() => undefined);
       await document.fonts.ready;
       const el = measureRef.current;
       if (!el || cancelled) return;
@@ -156,6 +162,8 @@ export const TextHoverEffect = ({
     y: baseline,
     textAnchor: "start" as const,
     fontSize: FONT_SIZE,
+    // One font everywhere, with clean outlines: see src/lib/fonts.ts.
+    fontFamily: WORDMARK_FONT_FAMILY,
     strokeWidth: 0.3,
   };
 
@@ -203,17 +211,17 @@ export const TextHoverEffect = ({
       <text
         ref={measureRef}
         {...textProps}
-        className="fill-transparent stroke-white/15 font-[helvetica] font-bold"
+        className="fill-transparent stroke-white/15 font-bold"
         style={{ opacity: hovered ? 0.7 : 0 }}
       >
         {text}
       </text>
       <motion.text
         {...textProps}
-        className="fill-transparent stroke-[#f093fb99] font-[helvetica] font-bold"
-        strokeDasharray={drawn ? "none" : DASH}
-        initial={{ strokeDashoffset: DASH }}
-        animate={{ strokeDashoffset: inView ? 0 : DASH }}
+        className="fill-transparent stroke-[#f093fb99] font-bold"
+        strokeDasharray={drawn ? "none" : dash}
+        initial={{ strokeDashoffset: dash }}
+        animate={{ strokeDashoffset: inView ? 0 : dash }}
         transition={{ duration: 4, ease: "easeInOut" }}
         onAnimationComplete={() => {
           if (inView) setDrawn(true);
@@ -225,7 +233,7 @@ export const TextHoverEffect = ({
         {...textProps}
         stroke={`url(#${gradientId})`}
         mask={`url(#${maskId})`}
-        className="fill-transparent font-[helvetica] font-bold"
+        className="fill-transparent font-bold"
       >
         {text}
       </text>

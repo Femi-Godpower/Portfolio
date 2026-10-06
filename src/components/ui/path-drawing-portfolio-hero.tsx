@@ -10,6 +10,9 @@ import {
 } from "react";
 import { useReducedMotion } from "motion/react";
 
+import { WORDMARK_FONT_FAMILY } from "@/lib/fonts";
+import { useSvgTextDashScale } from "@/lib/svg-text-dash";
+
 function cn(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(" ");
 }
@@ -50,84 +53,68 @@ type SvgPathDrawingTextAnimationProps = {
 
 type Letter = { char: string; x: number };
 
-function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    // Some browsers (blocked canvas/blob images, throttled tabs) never fire either event.
-    const timer = window.setTimeout(() => reject(new Error("svg raster timed out")), 1500);
-    img.onload = () => {
-      window.clearTimeout(timer);
-      resolve(img);
-    };
-    img.onerror = () => {
-      window.clearTimeout(timer);
-      reject(new Error("svg raster failed"));
-    };
-    img.src = url;
-  });
-}
-
 /** How long the name may stay hidden while measuring before it is shown fully drawn. */
 const STATIC_FALLBACK_MS = 2500;
 
+/** The drawing surface of the name, in viewBox units. */
+type LetterBox = {
+  width: number;
+  height: number;
+  /** CSS font shorthand, the same face the SVG renders. */
+  font: string;
+  baselineY: number;
+  strokeWidth: number;
+};
+
 /**
- * Rasterises a prepared copy of the SVG (white strokes) and returns its pixels.
- * `prepare` gets the clone and decides which texts are drawn and how.
+ * Strokes `letters` in white on a canvas the size of the viewBox (times `scale`)
+ * and returns its pixels. `dash` null draws the full outline.
+ *
+ * A canvas, not a picture of the SVG: an SVG turned into an image cannot use the
+ * page's web fonts (it rendered before an inlined copy of the font had loaded),
+ * so it measured a fallback font's letters and the I never closed. The canvas
+ * draws with the same loaded font, and in Chromium its dash lengths match the
+ * SVG stroke exactly (the F: 457 on both).
  */
-async function rasterize(
-  source: SVGSVGElement,
-  prepare: (clone: SVGSVGElement) => void,
+function strokeLetters(
+  box: LetterBox,
+  letters: ReadonlyArray<Letter>,
+  dash: number | null,
   scale: number,
-): Promise<{ data: Uint8ClampedArray; width: number; height: number } | null> {
-  const clone = source.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  prepare(clone);
-  clone.querySelectorAll("text").forEach((text) => {
-    text.setAttribute("stroke", "#ffffff");
-    text.style.stroke = "#ffffff";
-  });
+): { data: Uint8ClampedArray; width: number; height: number } | null {
+  const width = Math.max(1, Math.round(box.width * scale));
+  const height = Math.max(1, Math.round(box.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
 
-  const vb = source.viewBox.baseVal;
-  const w = Math.max(1, Math.round(vb.width || 800));
-  const h = Math.max(1, Math.round(vb.height || 160));
-  clone.setAttribute("width", String(w));
-  clone.setAttribute("height", String(h));
-  clone.style.visibility = "visible";
+  ctx.scale(scale, scale);
+  ctx.font = box.font;
+  ctx.textAlign = "start";
+  ctx.textBaseline = "alphabetic";
+  ctx.lineWidth = box.strokeWidth;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#ffffff";
+  ctx.setLineDash(dash === null ? [] : [dash, 100000]);
+  for (const letter of letters) {
+    ctx.strokeText(letter.char, letter.x, box.baselineY);
+  }
 
-  const xml = new XMLSerializer().serializeToString(clone);
-  const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml;charset=utf-8" }));
   try {
-    const img = await loadImage(url);
-    const cw = Math.max(1, Math.round(w * scale));
-    const ch = Math.max(1, Math.round(h * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = cw;
-    canvas.height = ch;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return null;
-    ctx.drawImage(img, 0, 0, cw, ch);
-    return { data: ctx.getImageData(0, 0, cw, ch).data, width: cw, height: ch };
-  } finally {
-    URL.revokeObjectURL(url);
+    return { data: ctx.getImageData(0, 0, width, height).data, width, height };
+  } catch {
+    // Blocked canvas readback: the caller falls back to an estimate.
+    return null;
   }
 }
 
 const isInk = (data: Uint8ClampedArray, pixel: number) => data[pixel * 4 + 3]! > 12;
 
-/** Only the letter at `index` stays, with the given dash. */
-function isolateLetter(clone: SVGSVGElement, index: number, dash: string) {
-  clone.querySelectorAll("text").forEach((text) => {
-    if (text.getAttribute("data-letter") !== String(index)) {
-      text.remove();
-      return;
-    }
-    text.style.strokeDasharray = dash;
-    text.style.strokeDashoffset = "0";
-  });
-}
-
-async function countLetterInk(source: SVGSVGElement, index: number, dash: string): Promise<number> {
-  const raster = await rasterize(source, (clone) => isolateLetter(clone, index, dash), 0.45);
+function countLetterInk(box: LetterBox, letter: Letter, dash: number | null): number {
+  const raster = strokeLetters(box, [letter], dash, 0.45);
   if (!raster) return 0;
   let n = 0;
   for (let p = 0; p < raster.width * raster.height; p += 1) {
@@ -137,26 +124,25 @@ async function countLetterInk(source: SVGSVGElement, index: number, dash: string
 }
 
 /** Smallest dash length that renders the same ink as the finished letter. */
-async function measureLetterDashLength(svg: SVGSVGElement, index: number): Promise<number> {
-  const full = await countLetterInk(svg, index, "none");
+function measureLetterDashLength(box: LetterBox, letter: Letter): number {
+  const full = countLetterInk(box, letter, null);
   if (full <= 0) {
     throw new Error("empty ink");
   }
 
   // Strict threshold: a looser one leaves the last few units of the outline undrawn,
   // which shows as a gap where the line should close.
-  const covered = async (dash: number) =>
-    (await countLetterInk(svg, index, `${dash} 100000`)) >= full * 0.9995;
+  const covered = (dash: number) => countLetterInk(box, letter, dash) >= full * 0.9995;
 
   let hi = 64;
-  while (hi < 24000 && !(await covered(hi))) {
+  while (hi < 24000 && !covered(hi)) {
     hi *= 2;
   }
 
   let lo = 1;
   while (lo < hi) {
     const mid = (lo + hi) >> 1;
-    if (await covered(mid)) hi = mid;
+    if (covered(mid)) hi = mid;
     else lo = mid + 1;
   }
 
@@ -166,21 +152,8 @@ async function measureLetterDashLength(svg: SVGSVGElement, index: number): Promi
 }
 
 /** Top-left corner of the finished letters, as % of the viewBox. */
-async function measureInkCorner(source: SVGSVGElement): Promise<{ left: number; top: number } | null> {
-  const raster = await rasterize(
-    source,
-    (clone) => {
-      clone.querySelectorAll("text").forEach((text) => {
-        if (!text.hasAttribute("data-letter")) {
-          text.remove();
-          return;
-        }
-        text.style.strokeDasharray = "none";
-        text.style.strokeDashoffset = "0";
-      });
-    },
-    1,
-  );
+function measureInkCorner(box: LetterBox, letters: ReadonlyArray<Letter>): { left: number; top: number } | null {
+  const raster = strokeLetters(box, letters, null, 1);
   if (!raster) return null;
 
   const { data, width, height } = raster;
@@ -235,6 +208,12 @@ function SvgPathDrawingTextAnimation({
   const [staticFallback, setStaticFallback] = useState(false);
   const shownStaticRef = useRef(false);
   const reduceMotion = useReducedMotion();
+  // WebKit counts dash lengths in device pixels; see src/lib/svg-text-dash.ts.
+  const dashScale = useSvgTextDashScale(svgRef);
+  const dashScaleRef = useRef(dashScale);
+  useEffect(() => {
+    dashScaleRef.current = dashScale;
+  }, [dashScale]);
   const display = text.trim();
   const baselineY = viewBoxHeight / 2 + fontSize * 0.358;
 
@@ -248,6 +227,8 @@ function SvgPathDrawingTextAnimation({
     if (!display) return;
     let cancelled = false;
     const split = async () => {
+      // Positions and outline lengths are only right in the wordmark font itself.
+      await document.fonts.load(`bold ${fontSize}px ${WORDMARK_FONT_FAMILY}`).catch(() => undefined);
       await document.fonts.ready;
       const el = measureRef.current;
       if (!el || cancelled) return;
@@ -273,24 +254,30 @@ function SvgPathDrawingTextAnimation({
     if (!letters) return;
     let cancelled = false;
     const measure = async () => {
-      const svg = svgRef.current;
-      if (!svg) return;
+      // One frame first, so the split letters are on screen before the canvas work.
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+      if (cancelled) return;
+      const box: LetterBox = {
+        width: viewBoxWidth,
+        height: viewBoxHeight,
+        font: `bold ${fontSize}px ${WORDMARK_FONT_FAMILY}`,
+        baselineY,
+        strokeWidth,
+      };
 
-      // Everything in parallel: one letter after another took long enough that
-      // the static fallback kicked in first, flashing the name before it drew.
-      const cornerTask = greeting
-        ? measureInkCorner(svg)
-          .catch(() => null)
-          .then((corner) => {
-            if (!cancelled && corner) setGlyphBox(corner);
-          })
-        : Promise.resolve();
+      if (greeting) {
+        const corner = measureInkCorner(box, letters);
+        if (corner) setGlyphBox(corner);
+      }
 
       if (reduceMotion) return;
-      const lengths = await Promise.all(
-        letters.map((_, index) => measureLetterDashLength(svg, index).catch(() => fontSize * 4)),
-      );
-      await cornerTask;
+      const lengths = letters.map((letter) => {
+        try {
+          return measureLetterDashLength(box, letter);
+        } catch {
+          return fontSize * 4;
+        }
+      });
       if (cancelled) return;
       setDashLengths(lengths);
     };
@@ -298,7 +285,7 @@ function SvgPathDrawingTextAnimation({
     return () => {
       cancelled = true;
     };
-  }, [letters, greeting, reduceMotion, fontSize, strokeWidth]);
+  }, [letters, greeting, reduceMotion, fontSize, strokeWidth, viewBoxWidth, viewBoxHeight, baselineY]);
 
   // 3. One shared timeline drives every letter.
   useEffect(() => {
@@ -314,14 +301,16 @@ function SvgPathDrawingTextAnimation({
 
     // Dashes are applied on the first frame, not here: if the browser never runs
     // animation frames (throttled or background tab), the letters stay fully drawn.
-    let dashed = false;
-    const applyDashes = () => {
+    // The scale follows the rendered size on WebKit, so it is re-applied whenever
+    // it changes instead of restarting the animation on every resize.
+    let dashedScale = 0;
+    const applyDashes = (scale: number) => {
       // Gap twice the dash, so "empty" (offset ±L) never shows a stray segment.
       dashLengths.forEach((length, index) => {
         const el = els[index];
-        if (el) el.style.strokeDasharray = `${length} ${length * 2}`;
+        if (el) el.style.strokeDasharray = `${length * scale} ${length * scale * 2}`;
       });
-      dashed = true;
+      dashedScale = scale;
     };
 
     const drawMs = Math.max(0.4, durationSec) * 1000;
@@ -350,7 +339,8 @@ function SvgPathDrawingTextAnimation({
       // animation on low-frame-rate browsers (e.g. Opera GX's FPS/CPU limiter).
       const dt = Math.min(250, Math.max(0, now - last));
       last = now;
-      if (!dashed) applyDashes();
+      const scale = dashScaleRef.current;
+      if (dashedScale !== scale) applyDashes(scale);
       if (pauseMs > 0) {
         pauseMs -= dt;
         dashLengths.forEach((_, index) => {
@@ -382,7 +372,7 @@ function SvgPathDrawingTextAnimation({
 
       dashLengths.forEach((length, index) => {
         const el = els[index];
-        if (el) el.style.strokeDashoffset = String(length * shift);
+        if (el) el.style.strokeDashoffset = String(length * scale * shift);
       });
       raf = window.requestAnimationFrame(tick);
     };
@@ -408,7 +398,8 @@ function SvgPathDrawingTextAnimation({
     strokeLinecap: "round" as const,
     fontSize,
     fontWeight: "bold",
-    fontFamily: "Arial, Helvetica, sans-serif",
+    // One font everywhere, with clean outlines: see src/lib/fonts.ts.
+    fontFamily: WORDMARK_FONT_FAMILY,
     letterSpacing: "0.02em",
   };
 

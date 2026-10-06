@@ -264,6 +264,44 @@ export async function generateMetadata({ params }: CmsPageProps): Promise<Metada
   };
 }
 
+// Tells Google the site's name (shown above the result) and who it belongs to, so a
+// search for the name leads to the home page rather than whichever page happens to
+// carry the name in its title.
+function HomeStructuredData({ locale }: { locale: string }) {
+  const siteUrl = new URL("/", getStarterOminityConfig().siteUrl).toString();
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}#website`,
+        url: siteUrl,
+        name: "Femi Godpower",
+        inLanguage: normalizeLocaleCode(locale),
+        publisher: { "@id": `${siteUrl}#person` },
+      },
+      {
+        "@type": "Person",
+        "@id": `${siteUrl}#person`,
+        name: "Femi Godpower",
+        url: siteUrl,
+        jobTitle: "Webdeveloper",
+        sameAs: [
+          "https://www.instagram.com/femigodpower",
+          "https://www.facebook.com/femi.godpower",
+        ],
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
+
 export default async function CmsCatchAllPage({ params }: CmsPageProps) {
   const routeParams = await params;
   const preview = await resolveDraftMode({ useNextDraftMode: true });
@@ -285,8 +323,11 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
     debug: getStarterOminityConfig().debugLogs,
   };
 
+  const isHome = normalizePath(resolved.route.localizedPath) === "/";
+
   return (
     <>
+      {isHome ? <HomeStructuredData locale={resolved.route.locale} /> : null}
       <div className="space-y-6">
         {renderCmsPage({
           page: resolved.page,
