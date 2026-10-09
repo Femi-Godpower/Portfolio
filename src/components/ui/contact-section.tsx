@@ -125,12 +125,13 @@ export default function ContactSection({
   const dictionary = resolveUiDictionary(locale);
 
   return (
-    // Fills the screen, so the footer cannot peek in and snap away mid-message.
-    // The card sits near the top: centring it left a big gap above.
+    // Just over 85vh, the footer's snap line (portfolio-footer.tsx): any shorter
+    // and the footer peeks in and snaps away mid-message, any taller just adds
+    // empty space under the card. The card keeps its own height.
     <section
       ref={sectionRef}
       id={id}
-      className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-start px-6 pb-24 pt-20 text-white sm:px-14 md:pt-24"
+      className="relative mx-auto flex min-h-[88vh] w-full max-w-7xl flex-col justify-start px-6 pb-6 pt-20 text-white sm:px-14 md:pt-24"
     >
       <div className="relative grid w-full rounded-[28px] border border-white/10 bg-white/[0.03] md:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col justify-between gap-8 p-6 sm:p-10 lg:col-span-2">
@@ -188,7 +189,7 @@ export default function ContactSection({
           ) : null}
         </div>
 
-        <div className="flex w-full items-center border-t border-white/10 bg-white/[0.02] p-6 sm:p-8 md:col-span-1 md:border-l md:border-t-0">
+        <div className="flex w-full items-center rounded-b-[27px] border-t border-white/10 bg-white/[0.02] p-6 sm:p-8 md:col-span-1 md:rounded-r-[27px] md:rounded-bl-none md:border-l md:border-t-0">
           {form ? (
             <div className="w-full">
               {submitted ? (
