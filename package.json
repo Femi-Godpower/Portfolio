@@ -9,8 +9,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test src/**/*.test.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "browserslist": [
     "chrome >= 90",

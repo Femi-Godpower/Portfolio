@@ -1,4 +1,5 @@
 import type { CmsRoutingConfig } from "@ominity/next/cms";
+import { localePrefixSegments } from "@ominity/next/cms";
 
 import { asRecordArray, asString } from "@/components/cms/helpers";
 import PortfolioFooter, {
@@ -7,13 +8,20 @@ import PortfolioFooter, {
   type SocialPlatform,
 } from "@/components/ui/portfolio-footer";
 import { getChannelAwareCmsRouting } from "@/lib/ominity/site";
-import { localizePath } from "@/lib/paths";
 import { getSiteFooterFields, type SiteFooterFields } from "@/lib/ominity/site-footer";
 
 const PLATFORMS: ReadonlyArray<SocialPlatform> = ["linkedin", "instagram", "x", "facebook", "ominity", "website"];
 
 const asPlatform = (value: unknown): SocialPlatform =>
   PLATFORMS.find((platform) => platform === asString(value)) ?? "website";
+
+/** "/en", "/be/nl" or "/" — the home page for this locale. */
+function homePathFor(locale: string, routing: CmsRoutingConfig): string {
+  const prefix = localePrefixSegments(locale, routing);
+  const segments = [...routing.basePath.replace(/^\/|\/$/g, "").split("/").filter(Boolean), ...prefix];
+  const path = segments.length > 0 ? `/${segments.join("/")}` : "/";
+  return routing.trailingSlash && path !== "/" ? `${path}/` : path;
+}
 
 function toFooterData(
   fields: SiteFooterFields,
@@ -49,7 +57,7 @@ function toFooterData(
       .filter((social) => social.href.length > 0),
     copyright: asString(fields.copyright).trim(),
     legalTitle: asString(fields.legal_title).trim(),
-    homePath: localizePath("/", locale, routing),
+    homePath: homePathFor(locale, routing),
     legalLinks: asRecordArray(fields.legal_links)
       .map((entry) => ({ label: asString(entry.label).trim(), href: asString(entry.url).trim() }))
       .filter((link) => link.label.length > 0 && link.href.length > 0),

@@ -31,7 +31,7 @@ export interface PortfolioFooterData {
   homePath: string;
 }
 
-const ACCENT = "text-[var(--site-accent)]";
+const ACCENT = "text-[#f093fb]";
 
 // lucide-react 1.x ships no brand logos, so these are simple hand-drawn marks.
 function SocialIcon({ platform }: { platform: SocialPlatform }) {
@@ -133,7 +133,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
     // At least one full screen, so the section above never peeks in once the footer
     // has snapped into view. justify-end puts any spare height above the links,
     // keeping FEMI close to the bottom edge.
-    <div className="relative flex min-h-screen w-full flex-col justify-end overflow-hidden text-[var(--site-muted)]">
+    <div className="relative flex min-h-screen w-full flex-col justify-end overflow-hidden text-white/60">
       <div className="relative z-40 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-14 sm:pt-12">
         {/* Phones get the link lists two-up: stacked, the footer ran ~260px past
             the screen it snaps to, so the name and copyright never came into
@@ -142,11 +142,11 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 pb-8 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-16">
           {data.columns.map((column) => (
             <div key={column.title}>
-              <h4 className="mb-4 text-lg font-semibold text-[var(--site-ink)] sm:mb-6">{column.title}</h4>
+              <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{column.title}</h4>
               <ul className="space-y-3">
                 {column.links.map((link, index) => (
                   <li key={`${link.label}-${index}`}>
-                    <a {...sectionLinkProps(link.href)} className="transition-colors hover:text-[var(--site-accent)]">
+                    <a {...sectionLinkProps(link.href)} className="transition-colors hover:text-[#f093fb]">
                       {link.label}
                     </a>
                   </li>
@@ -159,13 +159,13 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
             // Last and full width on phones, so the email address gets a whole line.
             <div className="max-sm:order-last max-sm:col-span-2">
               {data.contactTitle ? (
-                <h4 className="mb-4 text-lg font-semibold text-[var(--site-ink)] sm:mb-6">{data.contactTitle}</h4>
+                <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{data.contactTitle}</h4>
               ) : null}
               <ul className="space-y-4">
                 {data.email ? (
                   <li className="flex items-center gap-3">
                     <Mail size={18} className={ACCENT} aria-hidden />
-                    <a href={emailHref} className="transition-colors hover:text-[var(--site-accent)]">
+                    <a href={emailHref} className="transition-colors hover:text-[#f093fb]">
                       {data.email}
                     </a>
                   </li>
@@ -173,7 +173,7 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
                 {data.phone ? (
                   <li className="flex items-center gap-3">
                     <Phone size={18} className={ACCENT} aria-hidden />
-                    <a href={phoneHref} className="transition-colors hover:text-[var(--site-accent)]">
+                    <a href={phoneHref} className="transition-colors hover:text-[#f093fb]">
                       {data.phone}
                     </a>
                   </li>
@@ -191,12 +191,12 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           {data.legalLinks.length > 0 ? (
             <div>
               {data.legalTitle ? (
-                <h4 className="mb-4 text-lg font-semibold text-[var(--site-ink)] sm:mb-6">{data.legalTitle}</h4>
+                <h4 className="mb-4 text-lg font-semibold text-white sm:mb-6">{data.legalTitle}</h4>
               ) : null}
               <ul className="space-y-3">
                 {data.legalLinks.map((link, index) => (
                   <li key={`${link.label}-${index}`}>
-                    <a href={link.href} className="transition-colors hover:text-[var(--site-accent)]">
+                    <a href={link.href} className="transition-colors hover:text-[#f093fb]">
                       {link.label}
                     </a>
                   </li>
@@ -206,17 +206,17 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
           ) : null}
         </div>
 
-        <hr className="my-5 border-t border-[var(--site-rule)] sm:my-6" />
+        <hr className="my-5 border-t border-white/10 sm:my-6" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
           {data.socials.length > 0 ? (
-            <div className="flex gap-6 text-[var(--site-muted)]">
+            <div className="flex gap-6 text-white/50">
               {data.socials.map((social, index) => (
                 <a
                   key={`${social.platform}-${index}`}
                   href={social.href}
                   aria-label={SOCIAL_LABELS[social.platform]}
-                  className="group transition-colors hover:text-[var(--site-accent)]"
+                  className="group transition-colors hover:text-[#f093fb]"
                   target={social.href.startsWith("http") ? "_blank" : undefined}
                   rel={social.href.startsWith("http") ? "noreferrer" : undefined}
                 >

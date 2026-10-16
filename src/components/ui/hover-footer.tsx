@@ -186,8 +186,9 @@ export const TextHoverEffect = ({
         <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={width} y2="0">
           {hovered && (
             <>
-              <stop offset="0%" style={{ stopColor: "var(--site-accent)" }} />
-              <stop offset="100%" style={{ stopColor: "var(--site-accent-to)" }} />
+              <stop offset="0%" stopColor="#f093fb" />
+              <stop offset="50%" stopColor="#f78ca0" />
+              <stop offset="100%" stopColor="#f5576c" />
             </>
           )}
         </linearGradient>
@@ -210,14 +211,14 @@ export const TextHoverEffect = ({
       <text
         ref={measureRef}
         {...textProps}
-        className="fill-transparent stroke-[var(--site-line)] font-bold"
+        className="fill-transparent stroke-white/15 font-bold"
         style={{ opacity: hovered ? 0.7 : 0 }}
       >
         {text}
       </text>
       <motion.text
         {...textProps}
-        className="fill-transparent stroke-[var(--site-accent)] font-bold [stroke-opacity:0.6]"
+        className="fill-transparent stroke-[#f093fb99] font-bold"
         strokeDasharray={drawn ? "none" : dash}
         initial={{ strokeDashoffset: dash }}
         animate={{ strokeDashoffset: inView ? 0 : dash }}

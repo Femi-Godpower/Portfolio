@@ -1,9 +1,13 @@
 import { cache } from "react";
 
-import { normalizeLocaleCode, type CmsPage, type CmsRoute } from "@ominity/next/cms";
+import {
+  normalizeLocaleCode,
+  type CmsPage,
+  type CmsPageTranslation,
+  type CmsRoute,
+} from "@ominity/next/cms";
 
 import { getChannelAwareCmsRouting, getCmsRoutes } from "./site";
-import { translationsForPageId } from "./translations-for-page-id";
 
 /**
  * The CMS answers in one language per request, and it does not localize the
@@ -49,6 +53,31 @@ export const getCmsRoutesForAllLocales = cache(async (preview = false): Promise<
 
   return perLocale.flat();
 });
+
+function slugFromPath(path: string): string {
+  return path.replace(/^\/+/, "").replace(/\/+$/, "");
+}
+
+function translationsForPageId(
+  pageId: string,
+  locale: string,
+  routes: ReadonlyArray<CmsRoute>,
+): CmsPageTranslation[] {
+  const normalizedLocale = normalizeLocaleCode(locale);
+
+  return routes
+    .filter((route) => route.pageId === pageId)
+    .map((route) => {
+      const routeLocale = normalizeLocaleCode(route.locale);
+
+      return {
+        locale: routeLocale,
+        path: route.path,
+        slug: slugFromPath(route.path),
+        ...(routeLocale === normalizedLocale ? { canonical: true } : {}),
+      };
+    });
+}
 
 /**
  * The page as the CMS returned it, with `translations`, `locale` and `path`

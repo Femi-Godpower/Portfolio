@@ -47,9 +47,6 @@
     "email": "E-mail",
     "location": "Locatie",
     "response": "Reactietijd",
-    "formUnavailable": "Het contactformulier is nu niet beschikbaar. Stuur me gerust een e-mail.",
-    "recaptchaNotice": "Deze site is beveiligd met reCAPTCHA; het {privacy} en de {terms} van Google zijn van toepassing.",
-    "recaptchaPrivacy": "privacybeleid",
-    "recaptchaTerms": "servicevoorwaarden"
+    "formUnavailable": "Het contactformulier is nu niet beschikbaar. Stuur me gerust een e-mail."
   }
 }

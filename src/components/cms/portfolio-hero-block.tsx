@@ -3,7 +3,14 @@ import type { CmsRenderContext as StarterRenderContext } from "@ominity/next/cms
 
 import PathDrawingPortfolioHero from "@/components/ui/path-drawing-portfolio-hero";
 
-import { asHexColor, asString } from "./helpers";
+import { asString } from "./helpers";
+
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+const asHexColor = (value: unknown, fallback: string): string => {
+  const color = asString(value).trim();
+  return HEX_COLOR.test(color) ? color : fallback;
+};
 
 export function PortfolioHeroBlock({
   component,
