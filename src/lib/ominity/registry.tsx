@@ -8,6 +8,11 @@ import { ContactBlock } from "@/components/cms/contact-block";
 import { CookieDeclarationBlock } from "@/components/cms/cookie-declaration-block";
 import { FormBlock } from "@/components/cms/form-block";
 import { LegalDocumentBlock } from "@/components/cms/legal-document-block";
+import { LogisticsCtaBlock } from "@/components/cms/logistics-cta-block";
+import { LogisticsFeaturesBlock } from "@/components/cms/logistics-features-block";
+import { LogisticsHeroBlock } from "@/components/cms/logistics-hero-block";
+import { LogisticsStatementBlock } from "@/components/cms/logistics-statement-block";
+import { LogisticsTimelineBlock } from "@/components/cms/logistics-timeline-block";
 import { PortfolioHeroBlock } from "@/components/cms/portfolio-hero-block";
 import { TableBlock } from "@/components/cms/table-block";
 
@@ -28,6 +33,12 @@ export const cmsRegistry = createCmsRegistry<StarterRenderContext>([
   defineCmsComponent("legal-document", LegalDocumentBlock),
   defineCmsComponent("cookie-declaration", CookieDeclarationBlock),
   defineCmsComponent("table", TableBlock),
+  // Logistics page.
+  defineCmsComponent("logistics-hero", LogisticsHeroBlock),
+  defineCmsComponent("logistics-features", LogisticsFeaturesBlock),
+  defineCmsComponent("logistics-statement", LogisticsStatementBlock),
+  defineCmsComponent("logistics-cta", LogisticsCtaBlock),
+  defineCmsComponent("logistics-timeline", LogisticsTimelineBlock),
   // Contact form (starter block, kept for a future contact form).
   defineCmsComponent("form_block", FormBlock),
 ]);

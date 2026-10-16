@@ -28,3 +28,5 @@
 CLAUDE.md
 # Claude Code local config
 .claude/
+# Playwright CLI output (may contain credentials)
+.playwright-cli/

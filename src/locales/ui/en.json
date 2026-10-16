@@ -6,7 +6,13 @@
     "about": "About me",
     "approach": "Approach",
     "menu": "Open menu",
-    "close": "Close menu"
+    "close": "Close menu",
+    "logistics": {
+      "studies": "Studies",
+      "about": "About",
+      "searching": "Searching",
+      "contact": "Contact"
+    }
   },
   "forms": {
     "validation": {
@@ -47,6 +53,15 @@
     "email": "Email",
     "location": "Location",
     "response": "Response time",
-    "formUnavailable": "The contact form is not available right now. Send me an email instead."
+    "formUnavailable": "The contact form is not available right now. Send me an email instead.",
+    "recaptchaNotice": "This site is protected by reCAPTCHA and the Google {privacy} and {terms} apply.",
+    "recaptchaPrivacy": "Privacy Policy",
+    "recaptchaTerms": "Terms of Service"
+  },
+  "logisticsContact": {
+    "title": "Get in touch",
+    "intro": "Tell me who you are and what you have in mind. I read every message and reply as soon as I can.",
+    "close": "Close",
+    "saved": "Your message is saved. Open the contact form again to pick up where you left off."
   }
 }

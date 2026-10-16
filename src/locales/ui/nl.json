@@ -6,7 +6,13 @@
     "about": "Over mij",
     "approach": "Aanpak",
     "menu": "Menu openen",
-    "close": "Menu sluiten"
+    "close": "Menu sluiten",
+    "logistics": {
+      "studies": "Studie",
+      "about": "Over mij",
+      "searching": "Op zoek",
+      "contact": "Contact"
+    }
   },
   "forms": {
     "validation": {
@@ -47,6 +53,15 @@
     "email": "E-mail",
     "location": "Locatie",
     "response": "Reactietijd",
-    "formUnavailable": "Het contactformulier is nu niet beschikbaar. Stuur me gerust een e-mail."
+    "formUnavailable": "Het contactformulier is nu niet beschikbaar. Stuur me gerust een e-mail.",
+    "recaptchaNotice": "Deze site is beveiligd met reCAPTCHA; het {privacy} en de {terms} van Google zijn van toepassing.",
+    "recaptchaPrivacy": "privacybeleid",
+    "recaptchaTerms": "servicevoorwaarden"
+  },
+  "logisticsContact": {
+    "title": "Neem contact op",
+    "intro": "Vertel me wie je bent en wat je in gedachten hebt. Ik lees elk bericht en antwoord zo snel mogelijk.",
+    "close": "Sluiten",
+    "saved": "Je bericht is bewaard. Open het contactformulier opnieuw om verder te typen."
   }
 }

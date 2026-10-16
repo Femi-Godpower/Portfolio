@@ -1,4 +1,4 @@
-import { Public_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Inter, Public_Sans } from "next/font/google";
 
 /**
  * The face of the two big outlined names (hero and footer).
@@ -25,3 +25,15 @@ export const wordmarkFont = Public_Sans({
 
 /** CSS font-family value for the wordmark, fallbacks included. */
 export const WORDMARK_FONT_FAMILY = wordmarkFont.style.fontFamily;
+
+/** Logistics page: IBM Plex Sans Bold for headings, Inter Regular for body text. */
+export const plexSans = IBM_Plex_Sans({
+  weight: "700",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+});
+
+export const inter = Inter({
+  weight: "400",
+  subsets: ["latin"],
+});

@@ -108,3 +108,22 @@ export function consumeSection(): string | null {
 
   return lastConsumed && Date.now() - lastConsumed.at < 1000 ? lastConsumed.id : null;
 }
+
+// A section can open a card instead of being scrolled to: the logistics page's
+// "contact" opens the contact card. The page registers it while it is mounted;
+// every section link (menu, footer, buttons) asks here first.
+const sectionDialogs = new Map<string, () => void>();
+
+export function registerSectionDialog(id: string, open: () => void): () => void {
+  sectionDialogs.set(id, open);
+  return () => {
+    if (sectionDialogs.get(id) === open) sectionDialogs.delete(id);
+  };
+}
+
+/** Opens the card registered for this section; false when there is none. */
+export function openSectionDialog(id: string): boolean {
+  const open = sectionDialogs.get(id);
+  open?.();
+  return open !== undefined;
+}

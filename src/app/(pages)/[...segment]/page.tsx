@@ -324,6 +324,8 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
   };
 
   const isHome = normalizePath(resolved.route.localizedPath) === "/";
+  // The logistics side links the logistics home's sections in the footer instead of the portfolio's.
+  const isLogistics = resolved.page.components.some((component) => component.key.startsWith("logistics-"));
 
   return (
     <>
@@ -341,7 +343,10 @@ export default async function CmsCatchAllPage({ params }: CmsPageProps) {
           from the Site Footer content type, so there is one copy to edit. It
           sits outside the spaced wrapper so it still butts up against the page,
           the way it did when it was the last block on the home page. */}
-      <SiteFooter locale={resolved.route.locale} />
+      <SiteFooter
+        locale={resolved.route.locale}
+        logistics={isLogistics}
+      />
     </>
   );
 }

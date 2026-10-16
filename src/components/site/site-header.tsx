@@ -1,10 +1,14 @@
 import { getStarterChannelContext } from "@/lib/ominity/site";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
+import { getLogisticsHomePaths } from "@/lib/ominity/logistics-home";
 import { SiteHeaderClient } from "@/components/site/site-header-client";
 
 export async function SiteHeader() {
   const config = getStarterOminityConfig();
-  const channelContext = await getStarterChannelContext();
+  const [channelContext, logisticsHomePaths] = await Promise.all([
+    getStarterChannelContext(),
+    getLogisticsHomePaths(),
+  ]);
 
   return (
     <SiteHeaderClient
@@ -13,6 +17,7 @@ export async function SiteHeader() {
       localeSegmentStrategy={config.localeSegmentStrategy}
       trailingSlash={config.trailingSlash}
       basePath={config.basePath}
+      logisticsHomePaths={logisticsHomePaths}
     />
   );
 }

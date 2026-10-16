@@ -8,13 +8,14 @@ import {
   normalizeLocaleCode,
   parseLocaleCode,
 } from "@ominity/next/cms";
-import { Briefcase, Compass, House, UserRound } from "lucide-react";
+import { Briefcase, Compass, GraduationCap, House, Mail, Search, UserRound } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 
 import { CircleMenu, type CircleMenuItem } from "@/components/ui/circle-menu";
+import { LOGISTICS_SECTIONS } from "@/components/ui/logistics";
 import { resolveUiDictionary } from "@/lib/i18n/ui-dictionary";
 import { useSectionLink } from "@/lib/use-section-link";
 
@@ -29,6 +30,8 @@ interface SiteHeaderClientProps {
   readonly localeSegmentStrategy: CmsLocaleSegmentStrategy;
   readonly trailingSlash: boolean;
   readonly basePath: string;
+  /** Logistics home path per language, without locale prefix. */
+  readonly logisticsHomePaths: Readonly<Record<string, string>>;
 }
 
 function normalizePath(path: string): string {
@@ -144,6 +147,21 @@ function resolvePathContext(pathname: string, routing: CmsRoutingConfig): {
   };
 }
 
+const LOGISTICS_ICONS: Record<(typeof LOGISTICS_SECTIONS)[number], React.ReactNode> = {
+  studies: <GraduationCap size={16} />,
+  about: <UserRound size={16} />,
+  searching: <Search size={16} />,
+  contact: <Mail size={16} />,
+};
+
+function subscribeToDom(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.body, { childList: true, subtree: true });
+  return () => observer.disconnect();
+}
+
+const isLogisticsPage = () => document.querySelector(".theme-logistics") !== null;
+
 function withQuery(path: string, query: string): string {
   return query.length > 0 ? `${path}?${query}` : path;
 }
@@ -184,9 +202,22 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
   }, [currentLocale]);
 
   const homePath = localizeRelativePath("/", currentLocale, routing);
-  // Section links keep the clean home URL; the scroll happens in JS, also when
+
+  // The logistics page has its own sections; its blocks carry .theme-logistics
+  // (the same signal globals.css themes the page by). The header sits in the root
+  // layout, which does not know the page and hydrates before the page streams in,
+  // so it watches the DOM.
+  const onLogistics = useSyncExternalStore(subscribeToDom, isLogisticsPage, () => false);
+  const logisticsHomePath = props.logisticsHomePaths[currentLanguage];
+  // On the logistics side (logistics home and work experience) the name and the
+  // section links lead to the logistics home instead of the portfolio.
+  const sectionPagePath = onLogistics
+    ? logisticsHomePath ? localizeRelativePath(logisticsHomePath, currentLocale, routing) : pathname
+    : homePath;
+
+  // Section links keep the clean page URL; the scroll happens in JS, also when
   // the visitor is on another page (cookie policy, terms…).
-  const followSectionLink = useSectionLink(homePath);
+  const followSectionLink = useSectionLink(sectionPagePath);
 
   const onLanguageChange = (nextLanguage: string) => {
     const nextLocale = resolveLocaleForLanguage(props.locales, nextLanguage, currentLocale);
@@ -216,10 +247,20 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
           value: entry.language,
         }))
       : []),
-    { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: homePath, section: "top" },
-    { id: "cases", label: dictionary.nav.cases, icon: <Briefcase size={16} />, href: homePath, section: "works" },
-    { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: homePath, section: "approach" },
-    { id: "about", label: dictionary.nav.about, icon: <UserRound size={16} />, href: homePath, section: "about" },
+    ...(onLogistics
+      ? LOGISTICS_SECTIONS.map((section) => ({
+        id: section,
+        label: dictionary.nav.logistics[section],
+        icon: LOGISTICS_ICONS[section],
+        href: sectionPagePath,
+        section,
+      }))
+      : [
+        { id: "home", label: dictionary.nav.home, icon: <House size={16} />, href: homePath, section: "top" },
+        { id: "cases", label: dictionary.nav.cases, icon: <Briefcase size={16} />, href: homePath, section: "works" },
+        { id: "approach", label: dictionary.nav.approach, icon: <Compass size={16} />, href: homePath, section: "approach" },
+        { id: "about", label: dictionary.nav.about, icon: <UserRound size={16} />, href: homePath, section: "about" },
+      ]),
   ];
 
   return (
@@ -228,8 +269,8 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
       <div className="flex h-20 items-center justify-between gap-3 px-[7vw] min-[1026px]:px-[5vw]">
         <Link
-          href={homePath as Route}
-          className="pointer-events-auto text-sm font-semibold uppercase tracking-[0.3em] text-white/80 hover:text-white"
+          href={sectionPagePath as Route}
+          className="pointer-events-auto text-sm font-semibold uppercase tracking-[0.3em] text-[var(--site-ink)] opacity-80 hover:opacity-100"
         >
           {dictionary.brandName}
         </Link>

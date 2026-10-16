@@ -6,6 +6,7 @@ import { useCallback, useEffect } from "react";
 
 import {
   consumeSection,
+  openSectionDialog,
   rememberSection,
   scrollToSection,
   scrollToSectionWhenSettled,
@@ -37,6 +38,7 @@ export function useSectionLink(homePath: string) {
     const id = sectionFromHref(href);
     if (!id) return false;
 
+    if (openSectionDialog(id)) return true;
     if (isHome && scrollToSection(id)) return true;
 
     rememberSection(id);

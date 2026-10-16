@@ -60,7 +60,7 @@ function FormTextarea({ invalid, ...props }: FormTextareaAdapterProps) {
   return <Textarea {...props} aria-invalid={invalid ?? props["aria-invalid"]} />;
 }
 
-const formComponents = createShadcnFormComponents({
+export const formComponents = createShadcnFormComponents({
   Input: FormInput,
   Textarea: FormTextarea,
   Button,
@@ -104,6 +104,39 @@ const brandFormTheme: FormTheme = {
   "field.phoneNumberInput":
     "min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-white outline-none placeholder:text-white/35 focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60",
 };
+
+type ContactDictionary = ReturnType<typeof resolveUiDictionary>["contact"];
+
+const recaptchaLinkClass = "underline underline-offset-2 transition-colors hover:text-[#f093fb]";
+
+/**
+ * Google's required attribution. The floating reCAPTCHA badge is hidden in
+ * globals.css, which its terms only allow when this text sits near the form.
+ */
+export function RecaptchaNotice({
+  contact,
+  className = "text-white/40",
+}: {
+  contact: ContactDictionary;
+  /** Text colour; the default suits the dark home contact card. */
+  className?: string;
+}) {
+  const [before, rest = ""] = contact.recaptchaNotice.split("{privacy}");
+  const [middle, after = ""] = rest.split("{terms}");
+  return (
+    <p className={`mt-4 text-[0.7rem] leading-relaxed ${className}`}>
+      {before}
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className={recaptchaLinkClass}>
+        {contact.recaptchaPrivacy}
+      </a>
+      {middle}
+      <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className={recaptchaLinkClass}>
+        {contact.recaptchaTerms}
+      </a>
+      {after}
+    </p>
+  );
+}
 
 /**
  * Contact section: heading, story and contact details on one side, the Ominity
@@ -208,6 +241,7 @@ export default function ContactSection({
                 onSubmitSuccess={() => setSubmitted(true)}
                 onSubmitError={() => setSubmitted(false)}
               />
+              <RecaptchaNotice contact={dictionary.contact} />
             </div>
           ) : (
             <p className="text-sm leading-relaxed text-white/55">
