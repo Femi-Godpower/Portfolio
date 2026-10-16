@@ -14,6 +14,14 @@ export const asString = (value: unknown, fallback = ""): string => {
   return fallback;
 };
 
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+/** A CMS colour field, only if it is a hex colour like #f5576c. */
+export const asHexColor = <T extends string | undefined>(value: unknown, fallback: T): string | T => {
+  const color = asString(value).trim();
+  return HEX_COLOR.test(color) ? color : fallback;
+};
+
 export const asStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
     return [];

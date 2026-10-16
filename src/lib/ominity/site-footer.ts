@@ -36,8 +36,8 @@ function firstEntry(payload: unknown): SiteFooterFields | null {
 
 /**
  * Loads the Site Footer entry for one language. Returns null when the API is
- * not configured or the entry is gone, so the site renders without a footer
- * instead of every page failing.
+ * not configured or the content type is gone, so the site renders without a
+ * footer instead of every page failing.
  */
 export async function getSiteFooterFields(locale: string): Promise<SiteFooterFields | null> {
   const config = getStarterOminityConfig();
@@ -56,24 +56,26 @@ export async function getSiteFooterFields(locale: string): Promise<SiteFooterFie
   const endpoint = `${config.apiUrl.replace(/\/+$/, "")}/v1/cms/content/${CONTENT_TYPE_SLUG}`
     + `?language=${encodeURIComponent(language)}`;
 
-  try {
-    const response = await fetch(endpoint, {
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        Accept: "application/json",
-        "Accept-Language": language,
-      },
-      // Same ISR window as the pages; unlike the route segment's `revalidate`,
-      // this one can be a variable.
-      next: { revalidate: config.revalidateSeconds, tags: ["ominity-site-footer"] },
-    });
+  // A failed fetch or non-404 error throws, so an ISR refresh keeps the last
+  // good page instead of caching it without a footer.
+  const response = await fetch(endpoint, {
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      Accept: "application/json",
+      "Accept-Language": language,
+    },
+    // Same ISR window as the pages; unlike the route segment's `revalidate`,
+    // this one can be a variable.
+    next: { revalidate: config.revalidateSeconds, tags: ["ominity-site-footer"] },
+  });
 
-    if (!response.ok) {
-      return null;
-    }
-
-    return firstEntry(await response.json());
-  } catch {
+  if (response.status === 404) {
     return null;
   }
+
+  if (!response.ok) {
+    throw new Error(`Site footer request failed with status ${response.status}`);
+  }
+
+  return firstEntry(await response.json());
 }

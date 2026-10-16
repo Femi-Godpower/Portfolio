@@ -47,6 +47,9 @@
     "email": "Email",
     "location": "Location",
     "response": "Response time",
-    "formUnavailable": "The contact form is not available right now. Send me an email instead."
+    "formUnavailable": "The contact form is not available right now. Send me an email instead.",
+    "recaptchaNotice": "This site is protected by reCAPTCHA and the Google {privacy} and {terms} apply.",
+    "recaptchaPrivacy": "Privacy Policy",
+    "recaptchaTerms": "Terms of Service"
   }
 }

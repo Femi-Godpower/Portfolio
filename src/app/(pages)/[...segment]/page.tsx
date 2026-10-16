@@ -11,7 +11,6 @@ import {
 import { buildNextMetadataFromPage } from "@ominity/next/next";
 import { renderCmsPage } from "@ominity/next/cms/rendering";
 import {
-  localePrefixSegments,
   matchLocaleFromSegments,
   normalizeLocaleCode,
   type CmsPage,
@@ -19,6 +18,7 @@ import {
 } from "@ominity/next/cms";
 
 import { SiteFooter } from "@/components/site/site-footer";
+import { joinPath, localizePath, normalizePath, removeBasePath, splitPath } from "@/lib/paths";
 import { getStarterChannelContext } from "@/lib/ominity/site";
 import { getCmsClient, getCmsRoutes } from "@/lib/ominity/site";
 import { getStarterOminityConfig } from "@/lib/ominity/env";
@@ -51,67 +51,6 @@ interface ResolvedCmsResult {
   readonly route: ResolvedCmsRoute;
 }
 
-function normalizePath(path: string): string {
-  if (path.length === 0) {
-    return "/";
-  }
-
-  const withLeadingSlash = path.startsWith("/") ? path : `/${path}`;
-  if (withLeadingSlash === "/") {
-    return "/";
-  }
-
-  return withLeadingSlash.replace(/\/+$/, "");
-}
-
-function splitPath(path: string): ReadonlyArray<string> {
-  return normalizePath(path).split("/").filter((segment) => segment.length > 0);
-}
-
-function joinPath(segments: ReadonlyArray<string>): string {
-  if (segments.length === 0) {
-    return "/";
-  }
-
-  return `/${segments.join("/")}`;
-}
-
-function removeBasePath(path: string, basePath: string): string {
-  if (basePath.length === 0 || basePath === "/") {
-    return normalizePath(path);
-  }
-
-  const normalizedPath = normalizePath(path);
-  const normalizedBasePath = normalizePath(basePath);
-
-  if (normalizedPath === normalizedBasePath) {
-    return "/";
-  }
-
-  if (normalizedPath.startsWith(`${normalizedBasePath}/`)) {
-    return normalizePath(normalizedPath.slice(normalizedBasePath.length));
-  }
-
-  return normalizedPath;
-}
-
-function localizeVisiblePath(path: string, locale: string, routing: CmsRoutingConfig): string {
-  const routeSegments = splitPath(path);
-  const prefixSegments = localePrefixSegments(locale, routing);
-  const combined = [...prefixSegments, ...routeSegments];
-  const localizedPath = joinPath(combined);
-
-  const withBasePath = routing.basePath.length > 0
-    ? normalizePath(`${routing.basePath}${localizedPath === "/" ? "" : localizedPath}`)
-    : localizedPath;
-
-  if (routing.trailingSlash && withBasePath !== "/") {
-    return `${withBasePath}/`;
-  }
-
-  return withBasePath;
-}
-
 function resolveFallbackRoute(incomingPath: string, routing: CmsRoutingConfig): ResolvedCmsRoute {
   const normalizedIncomingPath = normalizePath(incomingPath);
   const relativePath = removeBasePath(normalizedIncomingPath, routing.basePath);
@@ -120,7 +59,7 @@ function resolveFallbackRoute(incomingPath: string, routing: CmsRoutingConfig): 
   const consumedSegments = matchedLocale?.consumedSegments ?? 0;
   const locale = normalizeLocaleCode(matchedLocale?.locale ?? routing.defaultLocale);
   const localizedPath = joinPath(segments.slice(consumedSegments));
-  const canonicalPath = localizeVisiblePath(localizedPath, locale, routing);
+  const canonicalPath = localizePath(localizedPath, locale, routing);
 
   return {
     locale,
@@ -169,25 +108,17 @@ const resolveCmsResult = async (params: CmsPageParams, preview: boolean): Promis
     // Fallback lookup below handles route endpoint failures.
   }
 
+  // getPageByPath returns null on a 404 and throws on any other failure. Let
+  // that throw: during an ISR refresh Next then keeps the last good page
+  // instead of caching a 404 for an API hiccup.
   const fallbackRoute = resolveFallbackRoute(incomingPath, routing);
-  try {
-    const page = await client.getPageByPath({
-      path: fallbackRoute.localizedPath,
-      locale: fallbackRoute.locale,
-      ...(preview ? { preview: true } : {}),
-    });
+  const page = await client.getPageByPath({
+    path: fallbackRoute.localizedPath,
+    locale: fallbackRoute.locale,
+    ...(preview ? { preview: true } : {}),
+  });
 
-    if (!page) {
-      return null;
-    }
-
-    return {
-      page,
-      route: fallbackRoute,
-    };
-  } catch {
-    return null;
-  }
+  return page ? { page, route: fallbackRoute } : null;
 };
 
 export async function generateStaticParams() {

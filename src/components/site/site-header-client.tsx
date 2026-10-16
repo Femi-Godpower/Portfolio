@@ -3,7 +3,6 @@
 import type { CmsLocale, CmsLocaleSegmentStrategy, CmsRoutingConfig } from "@ominity/next/cms";
 import {
   createRoutingConfig,
-  localePrefixSegments,
   matchLocaleFromSegments,
   normalizeLocaleCode,
   parseLocaleCode,
@@ -16,6 +15,7 @@ import { useEffect, useMemo } from "react";
 
 import { CircleMenu, type CircleMenuItem } from "@/components/ui/circle-menu";
 import { resolveUiDictionary } from "@/lib/i18n/ui-dictionary";
+import { joinPath, localizePath, removeBasePath, splitPath } from "@/lib/paths";
 import { useSectionLink } from "@/lib/use-section-link";
 
 interface LanguageOption {
@@ -29,66 +29,6 @@ interface SiteHeaderClientProps {
   readonly localeSegmentStrategy: CmsLocaleSegmentStrategy;
   readonly trailingSlash: boolean;
   readonly basePath: string;
-}
-
-function normalizePath(path: string): string {
-  if (path.length === 0) {
-    return "/";
-  }
-
-  const withLeadingSlash = path.startsWith("/") ? path : `/${path}`;
-  if (withLeadingSlash === "/") {
-    return "/";
-  }
-
-  return withLeadingSlash.replace(/\/+$/, "");
-}
-
-function splitPath(path: string): ReadonlyArray<string> {
-  return normalizePath(path).split("/").filter((segment) => segment.length > 0);
-}
-
-function joinPath(segments: ReadonlyArray<string>): string {
-  if (segments.length === 0) {
-    return "/";
-  }
-
-  return `/${segments.join("/")}`;
-}
-
-function removeBasePath(path: string, basePath: string): string {
-  if (basePath.length === 0 || basePath === "/") {
-    return normalizePath(path);
-  }
-
-  const normalizedPath = normalizePath(path);
-  const normalizedBasePath = normalizePath(basePath);
-
-  if (normalizedPath === normalizedBasePath) {
-    return "/";
-  }
-
-  if (normalizedPath.startsWith(`${normalizedBasePath}/`)) {
-    return normalizePath(normalizedPath.slice(normalizedBasePath.length));
-  }
-
-  return normalizedPath;
-}
-
-function localizeRelativePath(path: string, locale: string, routing: CmsRoutingConfig): string {
-  const routeSegments = splitPath(path);
-  const prefixSegments = localePrefixSegments(locale, routing);
-  const localizedPath = joinPath([...prefixSegments, ...routeSegments]);
-
-  const withBasePath = routing.basePath.length > 0
-    ? normalizePath(`${routing.basePath}${localizedPath === "/" ? "" : localizedPath}`)
-    : localizedPath;
-
-  if (routing.trailingSlash && withBasePath !== "/") {
-    return `${withBasePath}/`;
-  }
-
-  return withBasePath;
 }
 
 function localeLabel(locale: CmsLocale): string {
@@ -183,14 +123,14 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
     document.cookie = `ominity_locale=${encodeURIComponent(currentLocale)}; path=/; max-age=31536000; samesite=lax`;
   }, [currentLocale]);
 
-  const homePath = localizeRelativePath("/", currentLocale, routing);
+  const homePath = localizePath("/", currentLocale, routing);
   // Section links keep the clean home URL; the scroll happens in JS, also when
   // the visitor is on another page (cookie policy, terms…).
   const followSectionLink = useSectionLink(homePath);
 
   const onLanguageChange = (nextLanguage: string) => {
     const nextLocale = resolveLocaleForLanguage(props.locales, nextLanguage, currentLocale);
-    const nextPath = localizeRelativePath(joinPath(pathContext.suffixSegments), nextLocale, routing);
+    const nextPath = localizePath(joinPath(pathContext.suffixSegments), nextLocale, routing);
     const currentQuery = window.location.search.replace(/^\?/, "");
 
     document.cookie = `ominity_locale=${encodeURIComponent(nextLocale)}; path=/; max-age=31536000; samesite=lax`;
@@ -229,7 +169,7 @@ export function SiteHeaderClient(props: SiteHeaderClientProps) {
       <div className="flex h-20 items-center justify-between gap-3 px-[7vw] min-[1026px]:px-[5vw]">
         <Link
           href={homePath as Route}
-          className="pointer-events-auto text-sm font-semibold uppercase tracking-[0.3em] text-white/80 hover:text-white"
+          className="pointer-events-auto text-sm font-semibold uppercase tracking-[0.3em] text-[var(--site-ink)] opacity-80 hover:opacity-100"
         >
           {dictionary.brandName}
         </Link>

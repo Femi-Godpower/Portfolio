@@ -25,6 +25,17 @@
     --input: 0 0% 100% / 0.15;
     --ring: 0 0% 83%;
     --radius: 0.75rem;
+
+    /* Header, circle menu and footer colours. Pages can swap them (see the
+       logistics theme at the end of this file). */
+    --site-ink: #ffffff;
+    --site-muted: rgba(255, 255, 255, 0.6);
+    --site-line: rgba(255, 255, 255, 0.15);
+    --site-rule: rgba(255, 255, 255, 0.1);
+    --site-glass: rgba(12, 10, 15, 0.75);
+    --site-accent: #f093fb;
+    --site-accent-to: #f5576c;
+    --site-on-accent: #0c0a0f;
   }
 
   * {
@@ -52,6 +63,13 @@
     radial-gradient(ellipse 60% 1100px at 0% 85%, rgba(240, 147, 251, 0.08), transparent 70%),
     radial-gradient(ellipse 90% 1000px at 50% 100%, rgba(245, 87, 108, 0.16), transparent 70%);
   background-repeat: no-repeat;
+}
+
+/* The floating reCAPTCHA badge is hidden. Google allows this as long as the
+   form shows its attribution text instead (contact-section.tsx). It stays
+   in the DOM, so the invisible check keeps working. */
+.grecaptcha-badge {
+  visibility: hidden !important;
 }
 
 /**
@@ -170,4 +188,40 @@
     width: 7.5rem;
     color: rgba(255, 255, 255, 0.45);
   }
+}
+
+/* "Command & Spark" palette of the logistics page (logistics-* blocks). */
+@theme {
+  --color-spark-indigo: #2c2b4e;
+  --color-spark-slate: #5e7a91;
+  --color-spark-crimson: #ff2d4b;
+  --color-spark-asphalt: #565457;
+}
+
+/*
+ * The logistics page is light. Every logistics-* block carries .theme-logistics,
+ * so the whole page (background, header, menu, footer) follows from one class.
+ */
+body:has(.theme-logistics) {
+  color-scheme: light;
+  background-color: #ffffff;
+  --site-ink: #2c2b4e;
+  --site-muted: #565457;
+  --site-line: rgba(44, 43, 78, 0.15);
+  --site-rule: rgba(44, 43, 78, 0.1);
+  --site-glass: rgba(255, 255, 255, 0.8);
+  --site-accent: #ff2d4b;
+  --site-accent-to: #5e7a91;
+  --site-on-accent: #ffffff;
+}
+
+/* One continuous white background with soft palette glows, so the sections
+   flow into each other instead of stacking as bands. */
+body:has(.theme-logistics) .page-gradient {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 60% 900px at 100% 30%, rgba(94, 122, 145, 0.12), transparent 70%),
+    radial-gradient(ellipse 60% 900px at 0% 55%, rgba(255, 45, 75, 0.06), transparent 70%),
+    radial-gradient(ellipse 60% 900px at 100% 80%, rgba(44, 43, 78, 0.08), transparent 70%),
+    radial-gradient(ellipse 90% 900px at 50% 100%, rgba(94, 122, 145, 0.12), transparent 70%);
 }

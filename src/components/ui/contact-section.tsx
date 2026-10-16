@@ -105,6 +105,32 @@ const brandFormTheme: FormTheme = {
     "min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-white outline-none placeholder:text-white/35 focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60",
 };
 
+type ContactDictionary = ReturnType<typeof resolveUiDictionary>["contact"];
+
+const recaptchaLinkClass = "underline underline-offset-2 transition-colors hover:text-[#f093fb]";
+
+/**
+ * Google's required attribution. The floating reCAPTCHA badge is hidden in
+ * globals.css, which its terms only allow when this text sits near the form.
+ */
+function RecaptchaNotice({ contact }: { contact: ContactDictionary }) {
+  const [before, rest = ""] = contact.recaptchaNotice.split("{privacy}");
+  const [middle, after = ""] = rest.split("{terms}");
+  return (
+    <p className="mt-4 text-[0.7rem] leading-relaxed text-white/40">
+      {before}
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className={recaptchaLinkClass}>
+        {contact.recaptchaPrivacy}
+      </a>
+      {middle}
+      <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className={recaptchaLinkClass}>
+        {contact.recaptchaTerms}
+      </a>
+      {after}
+    </p>
+  );
+}
+
 /**
  * Contact section: heading, story and contact details on one side, the Ominity
  * form on the other. Text reveals line by line on scroll, like the sections
@@ -208,6 +234,7 @@ export default function ContactSection({
                 onSubmitSuccess={() => setSubmitted(true)}
                 onSubmitError={() => setSubmitted(false)}
               />
+              <RecaptchaNotice contact={dictionary.contact} />
             </div>
           ) : (
             <p className="text-sm leading-relaxed text-white/55">

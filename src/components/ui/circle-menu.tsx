@@ -26,7 +26,7 @@ const pointOnArc = (index: number, total: number, radius: number) => {
   return { x: radius * Math.cos(theta), y: radius * Math.sin(theta) };
 };
 
-const GRADIENT = "linear-gradient(90deg, #f093fb, #f5576c)";
+const GRADIENT = "linear-gradient(90deg, var(--site-accent), var(--site-accent-to))";
 
 export interface CircleMenuItem {
   id: string;
@@ -72,10 +72,10 @@ const MenuItem = ({ item, index, totalItems, isOpen, onSelect }: MenuItemProps) 
       "absolute flex items-center justify-center rounded-full border backdrop-blur",
       isOpen ? "pointer-events-auto" : "pointer-events-none",
       hovering
-        ? "border-transparent text-[#0c0a0f]"
+        ? "border-transparent text-[var(--site-on-accent)]"
         : item.active
-          ? "border-[#f093fb]/60 bg-[#0c0a0f]/80 text-[#f093fb]"
-          : "border-white/15 bg-[#0c0a0f]/80 text-white",
+          ? "border-[var(--site-accent)] bg-[var(--site-glass)] text-[var(--site-accent)]"
+          : "border-[var(--site-line)] bg-[var(--site-glass)] text-[var(--site-ink)]",
     ),
     tabIndex: isOpen ? 0 : -1,
     "aria-hidden": !isOpen || undefined,
@@ -90,7 +90,7 @@ const MenuItem = ({ item, index, totalItems, isOpen, onSelect }: MenuItemProps) 
     <>
       {item.icon}
       {hovering && (
-        <span className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-xs text-white">
+        <span className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-xs text-[var(--site-ink)]">
           {item.label}
         </span>
       )}
@@ -143,7 +143,7 @@ const MenuTrigger = ({
       animate={animate}
       style={{ height: CONSTANTS.itemSize, width: CONSTANTS.itemSize }}
       // Neutral: dark glass with a white icon, no brand colour.
-      className="flex cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#0c0a0f]/70 text-white outline-none ring-0 backdrop-blur transition-colors duration-150 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/60"
+      className="flex cursor-pointer items-center justify-center rounded-full border border-[var(--site-line)] bg-[var(--site-glass)] text-[var(--site-ink)] outline-none ring-0 backdrop-blur transition-colors duration-150 hover:border-[var(--site-accent)] focus-visible:ring-2 focus-visible:ring-[var(--site-accent)]"
       onClick={onToggle}
       aria-label={isOpen ? closeLabel : openLabel}
       aria-expanded={isOpen}
