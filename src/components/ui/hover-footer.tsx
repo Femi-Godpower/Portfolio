@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
 import { motion, useInView } from "motion/react";
 
 import { WORDMARK_FONT_FAMILY } from "@/lib/fonts";
@@ -147,7 +147,8 @@ export const TextHoverEffect = ({
     };
   }, [text]);
 
-  const trackCursor = (event: MouseEvent<SVGSVGElement>) => {
+  const trackCursor = (event: PointerEvent<SVGSVGElement>) => {
+    if (event.pointerType !== "mouse") return;
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
@@ -173,9 +174,10 @@ export const TextHoverEffect = ({
       width="100%"
       viewBox={`0 0 ${width} ${height}`}
       xmlns="http://www.w3.org/2000/svg"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onMouseMove={trackCursor}
+      // Mouse only: on a touch screen a tap would leave the reveal stuck on.
+      onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      onPointerMove={trackCursor}
       // overflow-visible: the box hugs the letters exactly, so the outer half of
       // the stroke (and the miter at every corner) sits right on the viewport
       // edge and would otherwise be shaved off.

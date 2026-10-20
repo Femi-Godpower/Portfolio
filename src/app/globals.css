@@ -94,8 +94,10 @@
   text-underline-offset: 3px;
 }
 
-.cookie-declaration a:hover {
-  color: #f5576c;
+@media (hover: hover) {
+  .cookie-declaration a:hover {
+    color: #f5576c;
+  }
 }
 
 .cookie-declaration .CookieDeclarationIntro {

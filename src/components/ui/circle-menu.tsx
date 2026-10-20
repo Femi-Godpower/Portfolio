@@ -81,8 +81,9 @@ const MenuItem = ({ item, index, totalItems, isOpen, onSelect }: MenuItemProps) 
     tabIndex: isOpen ? 0 : -1,
     "aria-hidden": !isOpen || undefined,
     "aria-label": item.label,
-    onMouseEnter: () => setHovering(true),
-    onMouseLeave: () => setHovering(false),
+    // Mouse only: a tap would otherwise leave the hover state stuck on.
+    onPointerEnter: ({ pointerType }: { pointerType: string }) => pointerType === "mouse" && setHovering(true),
+    onPointerLeave: () => setHovering(false),
     onFocus: () => setHovering(true),
     onBlur: () => setHovering(false),
   };

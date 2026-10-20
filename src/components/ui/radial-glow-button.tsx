@@ -73,6 +73,7 @@ const STYLES = `
           pointer-events: none;
         }
 
+        @media (hover: hover) {
         .rg-button:hover {
           --rg-pos-x: 0%;
           --rg-pos-y: 120%;
@@ -91,6 +92,7 @@ const STYLES = `
           --rg-border-color-1: hsla(320, 75%, 90%, 0.1);
           --rg-border-color-2: hsla(320, 50%, 90%, 0.35);
           --button-line-opacity: 1;
+        }
         }
 
         .rg-label {
