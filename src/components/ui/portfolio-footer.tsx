@@ -149,7 +149,8 @@ function FooterContent({ data }: { data: PortfolioFooterData }) {
     // At least one full screen, so the section above never peeks in once the footer
     // has snapped into view. justify-end puts any spare height above the links,
     // keeping FEMI close to the bottom edge.
-    <div className="relative flex min-h-screen w-full flex-col justify-end overflow-hidden text-[var(--site-muted)]">
+    // isolate: keeps the z-40/z-50 rows below inside the footer, so they never cover the fixed header (z-50).
+    <div className="relative isolate flex min-h-screen w-full flex-col justify-end overflow-hidden text-[var(--site-muted)]">
       {/* z-50: the big name's SVG below reaches up over the socials row and would swallow their clicks. */}
       <div className="relative z-50 mx-auto w-full max-w-7xl px-6 pt-8 sm:px-14 sm:pt-12">
         {/* Phones get the link lists two-up: stacked, the footer ran ~260px past
